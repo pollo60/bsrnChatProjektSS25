@@ -1,34 +1,28 @@
 
-
+import sys
 
 
 
 
 def main():
-    weiter = True
 
-    while weiter:
-        print("Wilkommen! Was moechtest Du tun?")
-        print(">> 1 << WHO")
-        print(">> 2 << EXIT")
+    print("Wilkommen! Was moechtest Du tun?")
 
-    try:
-        auswahl = int(input("Deine Wahl: "))
-    except ValueError:
-        print("Bitte eine gueltige Zahl eingeben")
-        continue
 
-    if auswahl == 1
-    WHO()
-    
+    while True:
+       zeige_menue()
+       wahl = input("Gib eine Zahl ein (1-3): ").strip()
 
-    if auswahl == 2
+       if wahl == "1":
+           WHO()
+        elif wahl == "2":
+           MSS()
+        elif wahl == "3":
+           print(" -> Programm wird beendet")
+           sys.exit
+        else:
+           print("Ungueltige eingabe. Bitte 1, 2 oder 3 eingeben.")
 
-    print("Programm beendet.")
-
-    weiter = False
-else: 
- print("ungueltige Auswahl")
 
 
 
@@ -41,5 +35,25 @@ if __name__ == "__main__":
 
 
 
+
+def zeige_menue():
+    print("\n Menue:")
+    print("1: \t WHO - Zeige Teilnehmer")
+    print("2: \t MSG - Nachricht senden")
+    print("3: \t EXIT - Beenden")
+
+
+
+
+
 def WHO():
-    print "socket.ShowAll()"
+    print("-> WHO: Teilnehmer werden gesucht....")
+    # CODE FUER NETZWERK (Broadcast ect.)
+
+
+
+def MSG():
+    empfaenger = input("Empfaenger: ")
+    nachricht = input("Nachricht: ")
+    print(f"-> Nachricht an {empfaenger}: {nachricht}")
+    # Hier wuerde man eine Nachricht versenden
