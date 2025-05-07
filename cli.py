@@ -16,7 +16,7 @@ def main():
        if wahl == "1":
            WHO()
         elif wahl == "2":
-           MSS()
+           MSG()
         elif wahl == "3":
            print(" -> Programm wird beendet")
            sys.exit
