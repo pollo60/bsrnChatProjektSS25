@@ -14,14 +14,14 @@ def main():
        wahl = input("Gib eine Zahl ein (1-3): ").strip()
 
        if wahl == "1":
-           WHO()
+            WHO()
         elif wahl == "2":
-           MSG()
+            MSG()
         elif wahl == "3":
-           print(" -> Programm wird beendet")
-           sys.exit
+            print(" -> Programm wird beendet")
+            sys.exit()
         else:
-           print("Ungueltige eingabe. Bitte 1, 2 oder 3 eingeben.")
+            print("Ungueltige eingabe. Bitte 1, 2 oder 3 eingeben.")
 
 
 
