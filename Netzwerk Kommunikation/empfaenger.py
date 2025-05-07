@@ -14,8 +14,7 @@ sock.bind("0.0.0.0", PORT)
 
 print(f"Dein Port ist: {PORT}. Warte auf Nachrichten...")
 
-while TRUE:
+while True:
     daten, addr = socket.recvfrom(BUFFER_SIZE)
     nachricht = daten.decode("utf-8")
     print(f"Nachricht von {addr[0]}:{addr[1]} -> {nachricht}")
-    
