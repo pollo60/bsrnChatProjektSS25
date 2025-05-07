@@ -10,10 +10,10 @@ def main():
 
 
     while True:
-       zeige_menue()
-       wahl = input("Gib eine Zahl ein (1-3): ").strip()
+        zeige_menue()
+        wahl = input("Gib eine Zahl ein (1-3): ").strip()
 
-       if wahl == "1":
+        if wahl == "1":
             WHO()
         elif wahl == "2":
             MSG()
