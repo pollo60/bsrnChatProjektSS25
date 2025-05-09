@@ -1,5 +1,18 @@
 
 import sys
+import socket
+
+PORT = 4000
+# Port des Discovery-Dienstes (gleicher wie im Server).
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# Wir erstellen einen UDP-Socket
+
+sock.setsockopt(socket.SOL_SOCKET, socket.S0_BROADCAST, 1)
+# Aktiviert das Broadcast-Senden an 255.255.255.255.
+
+sock.settimeout(2)
+# Warte maximal 2 Sekunden auf Antwort, sonst weiter.
 
 
 
@@ -17,6 +30,22 @@ def zeige_menue():
 def WHO():
     print("-> WHO: Teilnehmer werden gesucht....")
     # CODE FUER NETZWERK (Broadcast ect.)
+    
+    sock.sendto(b"WHO" , ("255.255.255.255", PORT))
+    # Wir senden den Befehl WHO als Bytes per UDP-Broadcast an alle.
+
+    try:
+        daten, addr = sock.recvfrom(1024)
+        # Wartet auf Antwort vom Discovery-Dienst.
+
+        print("Antwort vom Discovery-Dienst:", daten.decode())
+        # Wandelt die empfangenen Bytes wieder in Text um.
+
+    except socket.timeout:
+        # Wenn keine Antwort kommt, zeigen wir eine Meldung.
+        print("X Keine Antwort erhalten")
+
+
 
 
 
