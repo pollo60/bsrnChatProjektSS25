@@ -28,7 +28,7 @@ while True:
     # recvfrom(...) ist wie socket.receive(...) in Java: Liest Daten und gibt auch den Absender zurück (addr = (IP, Port)).
 
     nachricht = daten.decode('utf-8').strip()
-    absender_ip, absender-port = addr
+    absender_ip, absender_port = addr
     # daten.decode(...): Wandelt die empfangenen Bytes in Text (UTF-8) um.
     # strip() entfernt Leerzeichen oder Zeilenumbrüche.
     # addr ist ein Tupel (IP, Port) → wir speichern IP und Port getrennt.

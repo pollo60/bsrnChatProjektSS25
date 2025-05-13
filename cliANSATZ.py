@@ -2,6 +2,8 @@
 import sys
 import socket
 
+from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig
+
 PORT = 4000
 # Port des Discovery-Dienstes (gleicher wie im Server).
 
@@ -58,6 +60,20 @@ def MSG():
 
 
 def main():
+
+    
+
+    start = input("Zum Login y drücken").strip()
+
+    if start == "y":
+        zeigeConfig()
+        inConfigSchreiben()
+        zeigeConfig()
+
+    else:
+        print(" -> Programm wird beendet")
+        sys.exit()
+
 
     print("Wilkommen! Was moechtest Du tun?")
 
