@@ -1,5 +1,7 @@
 #discoveryANSATZ
 import toml
+import socket
+from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
 
 
 
@@ -48,3 +50,28 @@ def zeigeConfig():
 
 
 
+def WHO():
+    print("-> WHO: Teilnehmer werden gesucht....")
+    # CODE FUER NETZWERK (Broadcast ect.)
+    
+    sock.sendto(b"WHO" , ("255.255.255.255", PORT))
+    # Wir senden den Befehl WHO als Bytes per UDP-Broadcast an alle.
+
+    try:
+        daten, addr = sock.recvfrom(1024)
+        # Wartet auf Antwort vom Discovery-Dienst.
+
+        print("Antwort vom Discovery-Dienst:", daten.decode())
+        # Wandelt die empfangenen Bytes wieder in Text um.
+
+    except socket.timeout:
+        # Wenn keine Antwort kommt, zeigen wir eine Meldung.
+        print("X Keine Antwort erhalten")
+
+
+
+def MSG():
+    empfaenger = input("Empfaenger: ")
+    nachricht = input("Nachricht: ")
+    print(f"-> Nachricht an {empfaenger}: {nachricht}")
+    # Hier wuerde man eine Nachricht versenden

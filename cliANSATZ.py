@@ -1,21 +1,9 @@
 #cliANSATZ
-import sys
-import socket
 
-from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig
 
-PORT = 4000
-# Port des Discovery-Dienstes (gleicher wie im Server).
+from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# Wir erstellen einen UDP-Socket
-
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-# Aktiviert das Broadcast-Senden an 255.255.255.255.
-
-sock.settimeout(2)
-# Warte maximal 2 Sekunden auf Antwort, sonst weiter.
-
+from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
 
 
 
@@ -26,37 +14,6 @@ def zeige_menue():
     print("3: \t EXIT - Beenden")
 # Funktion zum Navigieren der Funktionen
 
-
-
-# in Discovery verschieben und hier nur aufrufen?
-
-def WHO():
-    print("-> WHO: Teilnehmer werden gesucht....")
-    # CODE FUER NETZWERK (Broadcast ect.)
-    
-    sock.sendto(b"WHO" , ("255.255.255.255", PORT))
-    # Wir senden den Befehl WHO als Bytes per UDP-Broadcast an alle.
-
-    try:
-        daten, addr = sock.recvfrom(1024)
-        # Wartet auf Antwort vom Discovery-Dienst.
-
-        print("Antwort vom Discovery-Dienst:", daten.decode())
-        # Wandelt die empfangenen Bytes wieder in Text um.
-
-    except socket.timeout:
-        # Wenn keine Antwort kommt, zeigen wir eine Meldung.
-        print("X Keine Antwort erhalten")
-
-
-
-
-# in Discovery verschieben und hier nur aufrufen?
-def MSG():
-    empfaenger = input("Empfaenger: ")
-    nachricht = input("Nachricht: ")
-    print(f"-> Nachricht an {empfaenger}: {nachricht}")
-    # Hier wuerde man eine Nachricht versenden
 
 
 def startup():
@@ -70,12 +27,11 @@ def startup():
 
 def main():
 
-    
-
     start = input(f"Zum Login y und dann ENTER drücken.   ").strip()
 
     if start == "y":
         startup()
+        netzwerkEmpfMain()
 
     else:
         print(" -> Programm wird beendet")
