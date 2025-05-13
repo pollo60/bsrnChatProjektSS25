@@ -63,7 +63,7 @@ def main():
 
     
 
-    start = input(f"Zum Login y und dann ENTER drücken").strip()
+    start = input(f"Zum Login y und dann ENTER drücken.   ").strip()
 
     if start == "y":
         zeigeConfig()
