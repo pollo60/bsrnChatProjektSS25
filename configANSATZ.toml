@@ -1,9 +1,5 @@
-
-
-
-
 [login_daten]
-name = 
-port =
-ip =
-hallo =
+name = "alti"
+port = "400"
+ip = "0.0.0.0"
+hallo = "hey ich bin hier neu"

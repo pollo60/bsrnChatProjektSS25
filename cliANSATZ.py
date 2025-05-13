@@ -24,10 +24,11 @@ def zeige_menue():
     print("1: \t WHO - Zeige Teilnehmer")
     print("2: \t MSG - Nachricht senden")
     print("3: \t EXIT - Beenden")
+# Funktion zum Navigieren der Funktionen
 
 
 
-
+# in Discovery verschieben und hier nur aufrufen?
 
 def WHO():
     print("-> WHO: Teilnehmer werden gesucht....")
@@ -50,12 +51,20 @@ def WHO():
 
 
 
-
+# in Discovery verschieben und hier nur aufrufen?
 def MSG():
     empfaenger = input("Empfaenger: ")
     nachricht = input("Nachricht: ")
     print(f"-> Nachricht an {empfaenger}: {nachricht}")
     # Hier wuerde man eine Nachricht versenden
+
+
+def startup():
+    zeigeConfig()
+    login_daten = datenAufnehmen()
+    inConfigSchreiben(login_daten)
+    zeigeConfig()
+# Funktion fuer den Start des Programs mit Login
 
 
 
@@ -66,10 +75,7 @@ def main():
     start = input(f"Zum Login y und dann ENTER drücken.   ").strip()
 
     if start == "y":
-        zeigeConfig()
-        login_daten = datenAufnehmen()
-        inConfigSchreiben(login_daten)
-        zeigeConfig()
+        startup()
 
     else:
         print(" -> Programm wird beendet")
