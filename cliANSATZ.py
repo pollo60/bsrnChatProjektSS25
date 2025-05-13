@@ -1,4 +1,4 @@
-
+#cliANSATZ
 import sys
 import socket
 
@@ -63,11 +63,12 @@ def main():
 
     
 
-    start = input("Zum Login y drücken").strip()
+    start = input(f"Zum Login y und dann ENTER drücken").strip()
 
     if start == "y":
         zeigeConfig()
-        inConfigSchreiben()
+        login_daten = datenAufnehmen()
+        inConfigSchreiben(login_daten)
         zeigeConfig()
 
     else:

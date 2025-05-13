@@ -1,4 +1,4 @@
-
+#discoveryANSATZ
 import toml
 
 
@@ -11,6 +11,8 @@ def datenAufnehmen():
     login_daten['ip']     = 0 # socket.get(ip) PLATZHALTER
     login_daten['hallo']  = input("Gib eine Automatische Wilkommensbotschaft fuer den Broadcast ins Netz ein:").strip()
     #Abfrage der Benutzerdaten zum Befüllen der Hashmap
+
+    return login_daten
 
 def inConfigSchreiben(login_daten):
     try:
