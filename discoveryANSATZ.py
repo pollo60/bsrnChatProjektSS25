@@ -38,10 +38,12 @@ def zeigeConfig():
         with open('config.toml', 'r') as f:
             config = toml.load(f)
         # Config-Datei laden
-        print(config['login_daten']['name'])
-        print(config['login_daten']['port'])  
-        print(config['login_daten']['ip']) 
-        print(config['login_daten']['hallo'])    
+
+        daten = config.get('login_daten', {}) # lade die logindaten der config in die variable 'daten'
+        print("name: " , daten.get('name', '<leer>'))
+        print("port: " , daten.get('port', '<leer>'))
+        print("ip: " , daten.get('ip', '<leer>'))
+        print("Botschaft: " , daten.get('hallo', '<leer>'))    
         # Daten der Config Datei abrufen
     except:
         print("Config-Datei nicht gefunden!")
