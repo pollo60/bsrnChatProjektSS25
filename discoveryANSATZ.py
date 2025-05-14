@@ -2,6 +2,7 @@
 import toml
 import socket
 from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
+from Netzwerk_Kommunikation.sender import discoveryWHO
 
 
 
@@ -54,10 +55,9 @@ def zeigeConfig():
 
 def WHO():
     print("-> WHO: Teilnehmer werden gesucht....")
-    # CODE FUER NETZWERK (Broadcast ect.)
     
-    sock.sendto(b"WHO" , ("255.255.255.255", PORT))
-    # Wir senden den Befehl WHO als Bytes per UDP-Broadcast an alle.
+    discoveryWHO()
+    #aus sender.py
 
     try:
         daten, addr = sock.recvfrom(1024)
