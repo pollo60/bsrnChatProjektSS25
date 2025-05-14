@@ -1,5 +1,5 @@
 #cliANSATZ
-
+import sys
 
 from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG
 

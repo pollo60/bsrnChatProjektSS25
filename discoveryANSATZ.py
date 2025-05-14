@@ -50,6 +50,8 @@ def zeigeConfig():
 
 
 
+
+
 def WHO():
     print("-> WHO: Teilnehmer werden gesucht....")
     # CODE FUER NETZWERK (Broadcast ect.)

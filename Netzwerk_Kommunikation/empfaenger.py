@@ -40,4 +40,3 @@ def netzwerkEmpfMain():
 
 
 def sende_who(port = PORT, timeout = 2):
-      
