@@ -59,16 +59,7 @@ def WHO():
     discoveryWHO()
     #aus sender.py
 
-    try:
-        daten, addr = sock.recvfrom(1024)
-        # Wartet auf Antwort vom Discovery-Dienst.
-
-        print("Antwort vom Discovery-Dienst:", daten.decode())
-        # Wandelt die empfangenen Bytes wieder in Text um.
-
-    except socket.timeout:
-        # Wenn keine Antwort kommt, zeigen wir eine Meldung.
-        print("X Keine Antwort erhalten")
+  
 
 
 

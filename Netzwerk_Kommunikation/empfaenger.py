@@ -2,6 +2,8 @@
 
 import toml
 import socket
+from Netzwerk_Kommunikation.sender import discoveryWHO
+
 
 
 
@@ -34,9 +36,8 @@ def netzwerkEmpfMain():
        
        while True:
          bereitmachen() 
-         sende_who()
+         discoveryWHO()
 
 
 
 
-def sende_who(port = PORT, timeout = 2):
