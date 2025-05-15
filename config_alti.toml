@@ -4,3 +4,8 @@ port = "4000"
 ip = "192.168.0.23"
 ipnetz = "192.168.0.255"
 hallo = "hallo"
+
+[sarah]
+ziel_name = "sarah"
+ziel_ip = "192.168.0.24"
+ziel_port = "4000"
