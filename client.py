@@ -1,26 +1,3 @@
-# cli.py
-
-class ChatClient:
-    def __init__(self, server_address, handle):
-        # Beispielhafte Initialisierung
-        self.server_address = server_address
-        self.handle = handle
-        self.users = ["Alice", "Bob", "Charlie"]  # Dummy-Daten
-
-    def get_users(self):
-        # Beispiel
-        return self.users
-
-    def send_message(self, empfaenger, nachricht):
-        print(f"Nachricht an {empfaenger}: {nachricht}")
-
-    def send_image(self, pfad):
-        print(f"Bild gesendet: {pfad}")
-
-    def set_handle(self, neuer_name):
-        self.handle = neuer_name
-        print(f"Benutzername geändert zu {neuer_name}")
-
 class ChatCLI:
     def __init__(self):
         self.client = None
