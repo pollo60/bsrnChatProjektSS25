@@ -7,5 +7,5 @@ ipnetz = "255.255.255.255"
 
 [sarah]
 ziel_name = "sarah"
-ziel_ip = "10.54.121.168"
-ziel_port = "6000"
+ziel_ip = "192.168.0.24"
+ziel_port = "4000"
