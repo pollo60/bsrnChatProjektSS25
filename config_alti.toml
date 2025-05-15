@@ -1,0 +1,6 @@
+[login_daten]
+name = "alti"
+port = "4000"
+ip = "192.168.0.23"
+ipnetz = "192.168.0.255"
+hallo = "hallo"

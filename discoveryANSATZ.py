@@ -1,68 +1,64 @@
-#discoveryANSATZ
+# discoveryANSATZ.py
+
 import toml
-import socket
-from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
 from Netzwerk_Kommunikation.sender import discoveryWHO, MSG
 
 
-
+# Abfrage der Benutzerdaten zum Befüllen der Hashmap
 def datenAufnehmen():
-    login_daten = {} # Eine Hashmap mit allen login daten
+    login_daten = {}
 
-    login_daten['name']   = input("Gib Deinen Namen ein:").strip() 
-    login_daten['port']   = input("Gib deine Portnummer ein:").strip()
-    login_daten['ip']     = "localhost" #platzhaler - kann spaeter durch socket ersetzt werden
-    login_daten['hallo']  = input("Gib eine Automatische Wilkommensbotschaft fuer den Broadcast ins Netz ein:").strip()
-    #Abfrage der Benutzerdaten zum Befüllen der Hashmap
+    login_daten['name']   = input("Gib Deinen Namen ein: ").strip()
+    login_daten['port']   = input("Gib deine Portnummer ein: ").strip()
+    login_daten['ip']     = "localhost"  # Platzhalter – später evtl. durch socket.gethostbyname(...) ersetzen
+    login_daten['hallo']  = input("Gib eine Automatische Wilkommensbotschaft fuer den Broadcast ins Netz ein: ").strip()
 
     return login_daten
 
-def inConfigSchreiben(login_daten):
+
+# Schreiben/Updaten der login_daten in benutzerspezifischer Konfigurationsdatei
+def inConfigSchreiben(login_daten, config_path):
     try:
-        with open('configANSATZ.toml', 'r') as f:       # das r steht fuer read
-            config = toml.load(f)
-        # Config-Datei laden
+        try:
+            with open(config_path, 'r') as f:
+                config = toml.load(f)
+        except FileNotFoundError:
+            config = {}
 
-        config['login_daten'].update(login_daten)   #Config-Datei Inhalt veraendern
+        config['login_daten'] = login_daten
 
-        with open('configANSATZ.toml', 'w') as f:     # das w steht fuer write
+        with open(config_path, 'w') as f:
             toml.dump(config, f)
-            # in die Config-Datei schreiben
-            print("Config-Datei wurde aktualisiert.")
-        
+
+        print("Config-Datei wurde aktualisiert.")
+
     except Exception as e:
-        print("Config Datei nicht gefunden!", e)
+        print("Fehler beim Schreiben in die Config-Datei:", e)
 
 
-
-
-def zeigeConfig():
+# Anzeigen der gespeicherten login_daten
+def zeigeConfig(config_path):
     try:
-        with open('configANSATZ.toml', 'r') as f:
+        with open(config_path, 'r') as f:
             config = toml.load(f)
-        # Config-Datei laden
-        print(config['login_daten']['name'])
-        print(config['login_daten']['port'])  
-        print(config['login_daten']['ip']) 
-        print(config['login_daten']['hallo'])    
-        # Daten der Config Datei abrufen
-    except:
-        print("Config-Datei nicht gefunden!")
+
+        login = config.get('login_daten', {})
+        print(login.get('name', ''))
+        print(login.get('port', ''))
+        print(login.get('ip', ''))
+        print(login.get('hallo', ''))
+
+    except Exception as e:
+        print("Fehler beim Lesen der Config-Datei:", e)
 
 
-
-
-
+# WHO-Befehl senden
 def WHO():
     print("-> WHO: Teilnehmer werden gesucht....")
-    
     discoveryWHO()
-    #aus sender.py
-
-  
 
 
-
-def nachrichtSenden():
+# Nachricht an bestimmten Empfänger senden
+def nachrichtSenden(config_path):
     empfaenger = input("Empfaenger: ")
-    MSG(empfaenger)
+    MSG(empfaenger, config_path)

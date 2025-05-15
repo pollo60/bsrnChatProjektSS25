@@ -1,13 +1,16 @@
-
 import socket
 import toml
 
 
-def MSG(empfaenger):
-    with open('configANSATZ.toml', 'r') as f:
-        config = toml.load(f)
+# Funktion zum Senden einer Nachricht an einen spezifischen Empfänger
+def MSG(empfaenger, config_path):
+    try:
+        with open(config_path, 'r') as f:
+            config = toml.load(f)
+    except FileNotFoundError:
+        print("Konfigurationsdatei nicht gefunden.")
+        return
 
-    # Überprüfen, ob der gewünschte Empfänger vorhanden ist
     if empfaenger not in config:
         print(f"Empfänger '{empfaenger}' nicht gefunden.")
         return
@@ -23,20 +26,15 @@ def MSG(empfaenger):
     sock.close()
 
 
-
-
-
-
-def discoveryWHO():
-# CODE FUER NETZWERK (Broadcast ect.)
-
+# Funktion zum Senden eines WHO-Broadcasts
+def discoveryWHO(config_path):
     try:
-
-        with open('configANSATZ.toml', 'r') as f:
+        with open(config_path, 'r') as f:
             config = toml.load(f)
-        PORT = int(config['login_daten']['port'])   
-        IPNETZ = (config['login_daten']['ipnetz'])  
-        # PORT und IP aus Konfigurationsdatei lesen 
+
+        login = config.get('login_daten', {})
+        PORT = int(login.get('port', 0))
+        IPNETZ = login.get('ipnetz', '255.255.255.255')
 
         print("Teilnehmer werden gesucht.")
 
@@ -44,19 +42,15 @@ def discoveryWHO():
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.settimeout(3)
 
-
-
-        sock.sendto(b"WHO" , (IPNETZ, PORT))
-        # Wir senden den Befehl WHO als Bytes per UDP-Broadcast an alle.
+        sock.sendto(b"WHO", (IPNETZ, PORT))
 
         try:
             daten, addr = sock.recvfrom(1024)
-            print("Antwort vom Discovery-Dienst: " , daten.decode())
+            print("Antwort vom Discovery-Dienst:", daten.decode())
         except socket.timeout:
             print("Keine Teilnehmer vorhanden.")
         finally:
             sock.close()
 
     except Exception as e:
-        print("Fehler bei WHO: ", e)
-        # e ist der Variablenname der Exception
+        print("Fehler bei WHO:", e)
