@@ -1,7 +1,7 @@
 #cliANSATZ
 import sys
 
-from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG
+from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG, nachrichtSenden
 
 from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
 
@@ -24,6 +24,21 @@ def startup():
 # Funktion fuer den Start des Programs mit Login
 
 
+def kontaktAnlegen(empfaenger):
+    empfaenger = {} # Eine Hashmap mit allen login daten
+
+    empfaenger['name']   = input("Gib den Namen ein:").strip() 
+    empfaenger['port']   = input("Gib die Portnummer ein:").strip()
+    empfaenger['ip']     = input("Gib die IP ein:").strip() #platzhaler - kann spaeter durch socket ersetzt werden
+    #Abfrage der Benutzerdaten zum Befüllen der Hashmap
+
+    inConfigSchreiben(empfaenger)
+    zeigeConfig()
+
+
+
+
+
 
 def main():
 
@@ -43,25 +58,25 @@ def main():
 
     while True:
         zeige_menue()
-        wahl = input("Gib eine Zahl ein (1-3): ").strip()
+        wahl = input("Gib eine Zahl ein (1-4): ").strip()
 
         if wahl == "1":
             WHO()
         elif wahl == "2":
-            MSG()
+            nachrichtSenden()
         elif wahl == "3":
             print(" -> Programm wird beendet")
             sys.exit()
+        elif wahl == "4":
+            empfaenger = input("Name des Kontakts: ")
+            kontaktAnlegen(empfaenger)
         else:
-            print("Ungueltige eingabe. Bitte 1, 2 oder 3 eingeben.")
+            print("Ungueltige eingabe. Bitte 1, 2, 3 oder 4 eingeben.")
 
 
 
 
 if __name__ == "__main__":
     main()
-
-
-
 
 
