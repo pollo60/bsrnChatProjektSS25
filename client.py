@@ -1,3 +1,5 @@
+#client ohne dummy und kommentaren, siehe test2.py
+
 class ChatCLI:
     def __init__(self):
         self.client = None

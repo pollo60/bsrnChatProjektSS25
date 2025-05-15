@@ -1,4 +1,4 @@
-# cli.py
+
 # Diese Klasse simuliert einen einfachen Chat-Client mit Dummy-Daten
 class ChatClient:
     def __init__(self, server_address, handle):
