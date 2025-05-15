@@ -12,6 +12,8 @@ def zeige_menue():
     print("1: \t WHO - Zeige Teilnehmer")
     print("2: \t MSG - Nachricht senden")
     print("3: \t EXIT - Beenden")
+    print("4: \t Kontakt anlegen")
+
 # Funktion zum Navigieren der Funktionen
 
 
