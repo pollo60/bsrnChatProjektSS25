@@ -1,6 +1,11 @@
 [login_daten]
 name = "alti"
-port = "4000"
+port = "3000"
 ip = "localhost"
-hallo = "adihadjap"
+hallo = "hallo"
 ipnetz = "255.255.255.255"
+
+[sarah]
+ziel_name = "sarah"
+ziel_ip = "10.54.121.168"
+ziel_port = "6000"

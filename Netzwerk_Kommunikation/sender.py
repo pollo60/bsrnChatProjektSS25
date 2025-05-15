@@ -4,20 +4,24 @@ import toml
 
 
 def MSG(empfaenger):
-
     with open('configANSATZ.toml', 'r') as f:
         config = toml.load(f)
 
+    # Überprüfen, ob der gewünschte Empfänger vorhanden ist
+    if empfaenger not in config:
+        print(f"Empfänger '{empfaenger}' nicht gefunden.")
+        return
 
-    ZIEL_IP =  print(config['empfaenger)']['ziel_ip'])
-    ZIEL_PORT = print(config['empfaenger']['ziel_port'])
+    ZIEL_IP = config[empfaenger]['ziel_ip']
+    ZIEL_PORT = int(config[empfaenger]['ziel_port'])
+
+    nachricht = input("Nachricht: ").strip()
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    nachricht = input("Was moechtest du senden? ")
     sock.sendto(nachricht.encode("utf-8"), (ZIEL_IP, ZIEL_PORT))
+    print(f"Nachricht an {ZIEL_IP}:{ZIEL_PORT} gesendet.")
+    sock.close()
 
-    print(f" Nachricht gesendet an {ZIEL_IP}:{ZIEL_PORT}")
 
 
 
@@ -31,7 +35,7 @@ def discoveryWHO():
         with open('configANSATZ.toml', 'r') as f:
             config = toml.load(f)
         PORT = int(config['login_daten']['port'])   
-        IPNETZ = int(config['login_daten']['ipnetz'])  
+        IPNETZ = (config['login_daten']['ipnetz'])  
         # PORT und IP aus Konfigurationsdatei lesen 
 
         print("Teilnehmer werden gesucht.")
@@ -46,7 +50,7 @@ def discoveryWHO():
         # Wir senden den Befehl WHO als Bytes per UDP-Broadcast an alle.
 
         try:
-            daten, addr = sock.receivefrom(1024)
+            daten, addr = sock.recvfrom(1024)
             print("Antwort vom Discovery-Dienst: " , daten.decode())
         except socket.timeout:
             print("Keine Teilnehmer vorhanden.")
