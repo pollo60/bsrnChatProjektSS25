@@ -2,7 +2,7 @@
 import toml
 import socket
 from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
-from Netzwerk_Kommunikation.sender import discoveryWHO
+from Netzwerk_Kommunikation.sender import discoveryWHO, MSG
 
 
 
@@ -63,8 +63,6 @@ def WHO():
 
 
 
-def MSG():
+def nachrichtSenden():
     empfaenger = input("Empfaenger: ")
-    nachricht = input("Nachricht: ")
-    print(f"-> Nachricht an {empfaenger}: {nachricht}")
-    # Hier wuerde man eine Nachricht versenden
+    MSG(empfaenger)
