@@ -85,6 +85,7 @@ def kontakteZeigen():
         print(f"Datei '{CONFIG_PATH}' nicht gefunden.")
 
 
+#####################################################################################
 
 
 
@@ -98,8 +99,9 @@ def main():
         print(" -> Programm wird beendet")
         sys.exit()
 
-    WHO(CONFIG_PATH)
     netzwerkEmpfMain()
+
+    WHO(CONFIG_PATH)
 
     print("Wilkommen! Was moechtest Du tun?")
 
