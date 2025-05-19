@@ -11,12 +11,12 @@ def empfangsschleife():
         config = toml.load(f)
 
     PORT = int(config['login_daten']['port'])
-    IP = config['login_daten']['ip']
+    # IP = config['login_daten']['ip']
     BUFFER_SIZE = 1024
 
     # Socket erstellen und binden
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((IP, PORT))
+    sock.bind(('', PORT)) # Offene IP fuer den Empfang von Broadcast und Unicast Nachrichten
 
     print("Warte auf Nachrichten...")
 
@@ -42,38 +42,8 @@ def netzwerkEmpfMain():
     if netzwerkEmpf:
         return
     netzwerkEmpf = True  
-
-    # Optional: Einmaliger WHO-Broadcast zur initialen Suche
-    discoveryWHO()
-
     thread = threading.Thread(target=empfangsschleife, daemon=True)
     thread.start()
     print("[Empfaenger-Thread wurde gestartet.]")
 
 
-# Funktion zum Senden eines WHO-Broadcasts
-def discoveryWHO():
-    try:
-        with open('configANSATZ.toml', 'r') as f:
-            config = toml.load(f)
-        PORT = int(config['login_daten']['port'])
-        IPNETZ = config['login_daten']['ipnetz']  # Broadcast-Adresse (z. B. 192.168.x.255)
-
-        print("Teilnehmer werden gesucht.")
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.settimeout(3)
-
-        sock.sendto(b"WHO", (IPNETZ, PORT))  # WHO-Befehl senden
-
-        try:
-            daten, addr = sock.recvfrom(1024)
-            print("Antwort vom Discovery-Dienst:", daten.decode())
-        except socket.timeout:
-            print("Keine Teilnehmer vorhanden.")
-        finally:
-            sock.close()
-
-    except Exception as e:
-        print("Fehler bei WHO:", e)

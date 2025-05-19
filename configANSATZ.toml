@@ -1,9 +1,9 @@
 [login_daten]
 name = "alti"
 port = "3000"
-ip = "localhost"
+ip = "192.168.0.23"
 hallo = "hallo"
-ipnetz = "255.255.255.255"
+ipnetz = "192.168.0.255"
 
 [sarah]
 ziel_name = "sarah"

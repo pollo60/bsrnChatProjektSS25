@@ -25,16 +25,13 @@ def MSG(empfaenger, config_path):
     print(f"Nachricht an {ZIEL_IP}:{ZIEL_PORT} gesendet.")
     sock.close()
 
-
 # Funktion zum Senden eines WHO-Broadcasts
-def discoveryWHO(config_path):
+def discoveryWHO():
     try:
-        with open(config_path, 'r') as f:
+        with open('configANSATZ.toml', 'r') as f:
             config = toml.load(f)
-
-        login = config.get('login_daten', {})
-        PORT = int(login.get('port', 0))
-        IPNETZ = login.get('ipnetz', '255.255.255.255')
+        PORT = int(config['login_daten']['port'])
+        IPNETZ = config['login_daten']['ipnetz']  # Broadcast-Adresse (z. B. 192.168.x.255)
 
         print("Teilnehmer werden gesucht.")
 
@@ -42,7 +39,7 @@ def discoveryWHO(config_path):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.settimeout(3)
 
-        sock.sendto(b"WHO", (IPNETZ, PORT))
+        sock.sendto(b"WHO", (IPNETZ, PORT))  # WHO-Befehl senden
 
         try:
             daten, addr = sock.recvfrom(1024)

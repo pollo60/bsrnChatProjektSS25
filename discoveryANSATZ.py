@@ -4,6 +4,9 @@ import toml
 from Netzwerk_Kommunikation.sender import discoveryWHO, MSG
 
 
+# Erreichbarkeit von teilnehmern ueberpruefen! Ping!
+
+
 # Abfrage der Benutzerdaten zum Befüllen der Hashmap
 def datenAufnehmen():
     login_daten = {}
@@ -17,17 +20,17 @@ def datenAufnehmen():
 
 
 # Schreiben/Updaten der login_daten in benutzerspezifischer Konfigurationsdatei
-def inConfigSchreiben(login_daten, config_path):
+def inConfigSchreiben(login_daten, CONFIG_PATH):
     try:
         try:
-            with open(config_path, 'r') as f:
+            with open(CONFIG_PATH, 'r') as f:
                 config = toml.load(f)
         except FileNotFoundError:
             config = {}
 
         config['login_daten'] = login_daten
 
-        with open(config_path, 'w') as f:
+        with open(CONFIG_PATH, 'w') as f:
             toml.dump(config, f)
 
         print("Config-Datei wurde aktualisiert.")
@@ -36,10 +39,11 @@ def inConfigSchreiben(login_daten, config_path):
         print("Fehler beim Schreiben in die Config-Datei:", e)
 
 
+# Vielleicht in CLIENT FILE?
 # Anzeigen der gespeicherten login_daten
-def zeigeConfig(config_path):
+def zeigeConfig(CONFIG_PATH):
     try:
-        with open(config_path, 'r') as f:
+        with open(CONFIG_PATH, 'r') as f:
             config = toml.load(f)
 
         login = config.get('login_daten', {})
@@ -59,6 +63,6 @@ def WHO():
 
 
 # Nachricht an bestimmten Empfänger senden
-def nachrichtSenden(config_path):
+def nachrichtSenden(CONFIG_PATH):
     empfaenger = input("Empfaenger: ")
-    MSG(empfaenger, config_path)
+    MSG(empfaenger, CONFIG_PATH)
