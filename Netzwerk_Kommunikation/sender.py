@@ -26,28 +26,31 @@ def MSG(empfaenger, CONFIG_PATH):
     sock.close()
 
 # Funktion zum Senden eines WHO-Broadcasts
-def discoveryWHO(CONFIG_PATH):
+def discoveryWHO(ipnetz, port, timeout=3):
+    antworten = []
+
     try:
-        with open(CONFIG_PATH, 'r') as f:
-            config = toml.load(f)
-        PORT = int(config['login_daten']['port'])
-        IPNETZ = config['login_daten']['ipnetz']  # Broadcast-Adresse (z. B. 192.168.x.255)
-
-        print("Teilnehmer werden gesucht.")
-
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.settimeout(3)
+        sock.settimeout(timeout)
 
-        sock.sendto(b"WHO", (IPNETZ, PORT))  # WHO-Befehl senden
+        # WHO senden
+        sock.sendto(b"WHO", (ipnetz, port))
+        print("WHO-Broadcast gesendet.")
 
-        try:
-            daten, addr = sock.recvfrom(1024)
-            print("Antwort vom Discovery-Dienst:", daten.decode())
-        except socket.timeout:
-            print("Keine Teilnehmer vorhanden.")
-        finally:
-            sock.close()
+        while True:
+            try:
+                daten, addr = sock.recvfrom(1024)
+                teilnehmername = daten.decode().strip()
+                ip = addr[0]
+                port = addr[1]
+                antworten.append((teilnehmername, ip, port))
+            except socket.timeout:
+                break  # Ende der Antwortphase
+            except Exception as e:
+                print("Fehler beim Empfangen einer Antwort:", e)
+                break
+    finally:
+        sock.close()
 
-    except Exception as e:
-        print("Fehler bei WHO:", e)
+    return antworten

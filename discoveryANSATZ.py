@@ -77,8 +77,40 @@ def zeigeConfig(CONFIG_PATH):
 
 # WHO-Befehl senden
 def WHO(CONFIG_PATH):
-    print("-> WHO: Teilnehmer werden gesucht....")
-    discoveryWHO(CONFIG_PATH)
+    try:
+        # Konfiguration laden
+        with open(CONFIG_PATH, 'r') as f:
+            config = toml.load(f)
+
+        port = int(config['login_daten']['port'])
+        ipnetz = config['login_daten']['ipnetz']
+
+        print("Teilnehmer werden gesucht...")
+
+        antworten = discoveryWHO(ipnetz, port)
+
+        neue_teilnehmer = False
+        for name, ip, port in antworten:
+            print(f"Antwort von {name} -> IP: {ip}, Port: {port}")
+            if name not in config:
+                config[name] = {
+                    'ziel_ip': ip,
+                    'ziel_port': port
+                }
+                neue_teilnehmer = True
+
+        if neue_teilnehmer:
+            with open(CONFIG_PATH, 'w') as f:
+                toml.dump(config, f)
+            print("Neue Teilnehmer wurden in der Config gespeichert.")
+        elif not antworten:
+            print("Keine Teilnehmer geantwortet.")
+        else:
+            print("Alle Teilnehmer bereits bekannt.")
+
+    except Exception as e:
+        print("Fehler bei discoveryWHO:", e)
+
 
 
 # Nachricht an bestimmten Empfänger senden
