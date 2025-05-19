@@ -31,7 +31,7 @@ def zeige_menue():
 
 
 # Funktion fuer den Start des Programms mit Login
-def startup():
+def startup(CONFIG_PATH):
     if not os.path.exists(CONFIG_PATH):
         print("Erzeuge neue Konfiguration...")
         daten = datenAufnehmen()
@@ -39,10 +39,11 @@ def startup():
     else:
         print(f"Config-Datei '{CONFIG_PATH}' gefunden.")
         zeigeConfig(CONFIG_PATH)
-        configAendern = input("Moechtest Du Deine Config-Datei bearbeiten? \t (y/n)")
+        configAendern = input("Möchtest Du Deine Config-Datei bearbeiten? (y/n) ").strip().lower()
         if configAendern == "y":
             login_daten = datenAufnehmen()
             inConfigSchreiben(login_daten, CONFIG_PATH)
+
     return CONFIG_PATH
             
 
@@ -91,13 +92,15 @@ def kontakteZeigen():
 
 # Hauptfunktion zum Programmstart
 def main():
+
+
     start = input("Zum Login y und dann ENTER drücken.   ").strip()
 
-    if start == "y":
-        CONFIG_PATH = startup()
-    else:
+    if start != "y":
         print(" -> Programm wird beendet")
         sys.exit()
+
+    CONFIG_PATH = startup(CONFIG_PATH)
 
     netzwerkEmpfMain()
 
