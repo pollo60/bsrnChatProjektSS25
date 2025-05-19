@@ -7,7 +7,6 @@ import toml
 
 from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG, nachrichtSenden
 from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
-from Netzwerk_Kommunikation.sender import discoveryWHO
 
 
 # Pfad zur benutzerspezifischen Konfigurationsdatei definieren
@@ -99,7 +98,7 @@ def main():
         print(" -> Programm wird beendet")
         sys.exit()
 
-    discoveryWHO(CONFIG_PATH)
+    WHO(CONFIG_PATH)
     netzwerkEmpfMain()
 
     print("Wilkommen! Was moechtest Du tun?")
