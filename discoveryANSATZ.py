@@ -10,12 +10,18 @@ from Netzwerk_Kommunikation.sender import discoveryWHO, MSG
 
 # Eigene IP Adresse automatisch abfragen und in Config schreiben (login_daten: ip, ipnetz)
 def ermittle_ip_und_broadcast():
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
+    try:
+        # Dummy-Verbindung zur Ermittlung der aktiven Netzwerkschnittstelle
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))  # Verbindet sich nicht wirklich
+        ip = s.getsockname()[0]
+        s.close()
 
-    # Annahme: /24-Netz (255.255.255.0)
-    ipnetz = ipaddress.ip_network(ip + '/24', strict=False)
-    return str(ip), str(ipnetz.broadcast_address)
+        netz = ipaddress.ip_network(ip + '/24', strict=False)
+        return str(ip), str(netz.broadcast_address)
+    except Exception as e:
+        print("Fehler bei IP-Ermittlung:", e)
+        raise RuntimeError("Netzwerkverbindung erforderlich, um IP zu ermitteln.")
 
 
 
