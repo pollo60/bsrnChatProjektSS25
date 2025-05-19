@@ -102,7 +102,7 @@ def main():
 
     CONFIG_PATH = startup(CONFIG_PATH)
 
-    netzwerkEmpfMain()
+    netzwerkEmpfMain(CONFIG_PATH)
 
     WHO(CONFIG_PATH)
 

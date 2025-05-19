@@ -5,9 +5,9 @@ import socket
 import threading
 
 # Hauptfunktion zum Empfang von Nachrichten über UDP und zur Reaktion auf WHO
-def empfangsschleife():
+def empfangsschleife(CONFIG_PATH):
     # Konfiguration laden
-    with open('configANSATZ.toml', 'r') as f:
+    with open(CONFIG_PATH, 'r') as f:
         config = toml.load(f)
 
     PORT = int(config['login_daten']['port'])
@@ -37,12 +37,12 @@ def empfangsschleife():
 netzwerkEmpf = False
 
 # Funktion zum Starten des Empfangsprozesses (nur einmal)
-def netzwerkEmpfMain():
+def netzwerkEmpfMain(CONFIG_PATH):
     global netzwerkEmpf
     if netzwerkEmpf:
         return
     netzwerkEmpf = True  
-    thread = threading.Thread(target=empfangsschleife, daemon=True)
+    thread = threading.Thread(target=empfangsschleife, args=(CONFIG_PATH,), daemon=True)
     thread.start()
     print("[Empfaenger-Thread wurde gestartet.]")
 

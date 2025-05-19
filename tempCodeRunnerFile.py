@@ -1,10 +1,5 @@
-
-
-def zeige_menue():
-    print("\n Menue:")
-    print("1: \t WHO - Zeige Teilnehmer")
-    print("2: \t MSG - Nachricht senden")
-    print("3: \t EXIT - Beenden")
-
-
-
+def get_config_path():
+    username = getpass.getuser()
+    config_dir = os.path.expanduser("~/.bsrnchat")
+    os.makedirs(config_dir, exist_ok=True)
+    return os.path.join(config_dir, f"config_{username}.toml")
