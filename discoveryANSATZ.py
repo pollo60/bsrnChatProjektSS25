@@ -15,8 +15,9 @@ def datenAufnehmen():
 
     login_daten['name']   = input("Gib Deinen Namen ein: ").strip()
     login_daten['port']   = input("Gib deine Portnummer ein: ").strip()
-    login_daten['ip']     = "localhost"  # Platzhalter – später evtl. durch socket.gethostbyname(...) ersetzen
+    login_daten['ip']     = "192.168.0.23"  # Platzhalter – später evtl. durch socket.gethostbyname(...) ersetzen
     login_daten['hallo']  = input("Gib eine Automatische Wilkommensbotschaft fuer den Broadcast ins Netz ein: ").strip()
+    login_daten['ipnetz'] = "192.168.0.255" # Platzhalter
 
     return login_daten
 
