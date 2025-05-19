@@ -108,7 +108,7 @@ def main():
         wahl = input("Gib eine Zahl ein (1-5): ").strip()
 
         if wahl == "1":
-            WHO()
+            WHO(CONFIG_PATH)
         elif wahl == "2":
             nachrichtSenden(CONFIG_PATH)
         elif wahl == "3":

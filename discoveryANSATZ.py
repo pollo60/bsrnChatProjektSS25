@@ -76,9 +76,9 @@ def zeigeConfig(CONFIG_PATH):
 
 
 # WHO-Befehl senden
-def WHO():
+def WHO(CONFIG_PATH):
     print("-> WHO: Teilnehmer werden gesucht....")
-    discoveryWHO()
+    discoveryWHO(CONFIG_PATH)
 
 
 # Nachricht an bestimmten Empfänger senden

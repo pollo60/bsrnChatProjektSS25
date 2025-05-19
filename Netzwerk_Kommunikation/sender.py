@@ -3,9 +3,9 @@ import toml
 
 
 # Funktion zum Senden einer Nachricht an einen spezifischen Empfänger
-def MSG(empfaenger, config_path):
+def MSG(empfaenger, CONFIG_PATH):
     try:
-        with open(config_path, 'r') as f:
+        with open(CONFIG_PATH, 'r') as f:
             config = toml.load(f)
     except FileNotFoundError:
         print("Konfigurationsdatei nicht gefunden.")
@@ -26,9 +26,9 @@ def MSG(empfaenger, config_path):
     sock.close()
 
 # Funktion zum Senden eines WHO-Broadcasts
-def discoveryWHO():
+def discoveryWHO(CONFIG_PATH):
     try:
-        with open('configANSATZ.toml', 'r') as f:
+        with open(CONFIG_PATH, 'r') as f:
             config = toml.load(f)
         PORT = int(config['login_daten']['port'])
         IPNETZ = config['login_daten']['ipnetz']  # Broadcast-Adresse (z. B. 192.168.x.255)
