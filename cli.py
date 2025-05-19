@@ -80,7 +80,7 @@ def kontakteZeigen():
         with open(CONFIG_PATH, 'r') as f:
             config = toml.load(f)
             print("Inhalt der Konfigurationsdatei:\n")
-            print(toml.dumps(config))  # Gibt die ganze Datei aus VIELLEICHT SEPARATE DATEI FUER CONFIG UND KONTAKTE?
+            print(toml.dumps(config))  # Gibt die ganze Datei aus \\ VIELLEICHT SEPARATE DATEI FUER CONFIG UND KONTAKTE?
     except FileNotFoundError:
         print(f"Datei '{CONFIG_PATH}' nicht gefunden.")
 
