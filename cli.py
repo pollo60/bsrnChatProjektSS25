@@ -92,7 +92,7 @@ def kontakteZeigen():
 
 # Hauptfunktion zum Programmstart
 def main():
-
+    CONFIG_PATH = get_config_path()
 
     start = input("Zum Login y und dann ENTER drücken.   ").strip()
 
