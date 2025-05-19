@@ -6,7 +6,9 @@ from Netzwerk_Kommunikation.sender import discoveryWHO, MSG
 
 # Erreichbarkeit von teilnehmern ueberpruefen! Ping!
 
+# Eigene IP Adresse automatisch abfragen und in Config schreiben (login_daten: ip, ipnetz)
 
+#Client file?
 # Abfrage der Benutzerdaten zum Befüllen der Hashmap
 def datenAufnehmen():
     login_daten = {}
@@ -18,7 +20,7 @@ def datenAufnehmen():
 
     return login_daten
 
-
+# Client file?
 # Schreiben/Updaten der login_daten in benutzerspezifischer Konfigurationsdatei
 def inConfigSchreiben(login_daten, CONFIG_PATH):
     try:
