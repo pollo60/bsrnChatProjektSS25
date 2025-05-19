@@ -17,15 +17,14 @@ def ermittle_ip_und_broadcast():
         ip = s.getsockname()[0]
         s.close()
 
-        netz = ipaddress.ip_network(ip + '/24', strict=False)
-        return str(ip), str(netz.broadcast_address)
+        ipnetz = ipaddress.ip_network(ip + '/24', strict=False)
+        return str(ip), str(ipnetz.broadcast_address)
     except Exception as e:
         print("Fehler bei IP-Ermittlung:", e)
         raise RuntimeError("Netzwerkverbindung erforderlich, um IP zu ermitteln.")
 
 
 
-## VON CHATGPT ^^^ muss umformuliert werden
 
 
 #Client file?
