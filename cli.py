@@ -44,6 +44,7 @@ def startup():
         if configAendern == "y":
             login_daten = datenAufnehmen()
             inConfigSchreiben(login_daten, CONFIG_PATH)
+    return CONFIG_PATH
             
 
 
@@ -93,12 +94,12 @@ def main():
     start = input("Zum Login y und dann ENTER drücken.   ").strip()
 
     if start == "y":
-        startup()
+        CONFIG_PATH = startup()
     else:
         print(" -> Programm wird beendet")
         sys.exit()
 
-    discoveryWHO()
+    discoveryWHO(CONFIG_PATH)
     netzwerkEmpfMain()
 
     print("Wilkommen! Was moechtest Du tun?")
