@@ -42,17 +42,22 @@ def discoveryWHO(ipnetz, port, timeout=3):
             try:
                 daten, addr = sock.recvfrom(1024)
                 antwort_str = daten.decode().strip()
+
                 try:
-                    name, ip, port = antwort_str.split("|")
-                    antworten.append((name, ip, port))
+                    kontaktanfrage, ip, port = antwort_str.split("|")
+                    antworten.append((kontaktanfrage, ip, port))
                 except ValueError:
-                    print("Antwortformat falsch: ", antwort_str)
+                    print("Antwort im falschen Format:", antwort_str)
+                    continue
+
             except socket.timeout:
                 break  # Ende der Antwortphase
             except Exception as e:
                 print("Fehler beim Empfangen einer Antwort:", e)
                 break
+
     finally:
         sock.close()
 
     return antworten
+
