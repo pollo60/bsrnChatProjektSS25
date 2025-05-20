@@ -36,6 +36,7 @@ def datenAufnehmen():
     login_daten = {}
 
     login_daten['name']   = input("Gib Deinen Namen ein: ").strip()
+    login_daten['name'].lower()
     login_daten['port']   = input("Gib deine Portnummer ein: ").strip()
     login_daten['ip']     = ip # Platzhalter – später evtl. durch socket.gethostbyname(...) ersetzen
     login_daten['hallo']  = input("Gib eine Automatische Wilkommensbotschaft fuer den Broadcast ins Netz ein: ").strip()

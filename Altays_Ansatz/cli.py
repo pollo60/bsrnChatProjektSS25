@@ -121,6 +121,7 @@ def main():
             sys.exit()
         elif wahl == "4":
             empfaenger = input("Name des Kontakts: ")
+            empfaenger.lower()
             kontaktAnlegen(empfaenger)
         elif wahl == "5":
             kontakteZeigen()

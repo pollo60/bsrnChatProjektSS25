@@ -11,7 +11,7 @@ def MSG(empfaenger, CONFIG_PATH):
         print("Konfigurationsdatei nicht gefunden.")
         return
 
-    if empfaenger not in config:
+    if empfaenger.lower() not in config:
         print(f"Empfänger '{empfaenger}' nicht gefunden.")
         return
 
@@ -41,10 +41,12 @@ def discoveryWHO(ipnetz, port, timeout=3):
         while True:
             try:
                 daten, addr = sock.recvfrom(1024)
-                teilnehmername = daten.decode().strip()
-                ip = addr[0]
-                port = addr[1]
-                antworten.append((teilnehmername, ip, port))
+                antwort_str = daten.decode().strip()
+                try:
+                    name, ip, port = antwort_str.split("|")
+                    antworten.append((name.strip()), ip.strip(), int(port.strip()))
+                except ValueError:
+                    print("Antwortformat falsch: ", antwort_str)
             except socket.timeout:
                 break  # Ende der Antwortphase
             except Exception as e:

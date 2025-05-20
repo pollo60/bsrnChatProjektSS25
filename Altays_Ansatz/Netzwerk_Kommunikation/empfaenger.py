@@ -16,6 +16,7 @@ def empfangsschleife(CONFIG_PATH):
 
     # Socket erstellen und binden
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # akzeptiert Broadcasts
     sock.bind(('', PORT)) # Offene IP fuer den Empfang von Broadcast und Unicast Nachrichten
 
     print("Warte auf Nachrichten...")
@@ -28,7 +29,7 @@ def empfangsschleife(CONFIG_PATH):
 
         # Falls WHO empfangen wird, automatische Antwort senden
         if nachricht == "WHO":
-            antwort = f"{config['login_daten']['name']} ist online"
+            antwort = f"{config['login_daten']['name']}|{config['login_daten']['ip']}|{config['login_daten']['port']}"
             sock.sendto(antwort.encode("utf-8"), addr)
             print(f"[Antwort gesendet] an {addr}")
 
