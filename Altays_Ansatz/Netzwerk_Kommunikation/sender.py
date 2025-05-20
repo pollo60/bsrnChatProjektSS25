@@ -44,7 +44,7 @@ def discoveryWHO(ipnetz, port, timeout=3):
                 antwort_str = daten.decode().strip()
                 try:
                     name, ip, port = antwort_str.split("|")
-                    antworten.append((name.strip()), ip.strip(), int(port.strip()))
+                    antworten.append((name, ip, port))
                 except ValueError:
                     print("Antwortformat falsch: ", antwort_str)
             except socket.timeout:
