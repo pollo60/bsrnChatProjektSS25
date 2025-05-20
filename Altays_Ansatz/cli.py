@@ -5,7 +5,7 @@ import getpass
 import os
 import toml
 
-from Altays_Ansatz.discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG, nachrichtSenden
+from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG, nachrichtSenden
 from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
 
 
