@@ -41,14 +41,14 @@ class DiscoveryService:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(('', self.whoisport))
 
-            print(f"🌐 Discovery-Service läuft. Warte auf Nachrichten auf Port {self.whoisport}...")
+            print("🌐 Discovery-Service läuft. Warte auf Nachrichten auf Port {self.whoisport}...")
 
             while self.running:
                 try:
                     # Empfang einer Nachricht
                     data, addr = sock.recvfrom(BUFFER_SIZE)
                     message = data.decode().strip()
-                    print(f"\n📥 Neue Nachricht von {addr}: {message}")
+                    print("\n📥 Neue Nachricht von {addr}: {message}")
                     self.handle_message(message, addr, sock)
                 
                 except ConnectionResetError:
@@ -57,7 +57,7 @@ class DiscoveryService:
 
                 except Exception as e:
                     # Andere erwartete Fehler
-                    printf(f"⚠️ Fehler beim Empfangen: {e}")
+                    printf("⚠️ Fehler beim Empfangen: {e}")
 
     def handle_message(self, message, addr, sock):
         """
