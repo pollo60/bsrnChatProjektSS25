@@ -1,10 +1,22 @@
-import time
 from network import send_udp_broadcast
+import time
 
-def start_cli():
+def start_cli(auto=False, handle="", port=5000, whoisport=54321):
     """
-    Einfache CLI zur Interaktion mit dem Discovery-Dienst.
+    Startet das CLI für den Nutzer.
+    Im Automodus (auto=True) wird automatisch JOIN und WHO gesendet.
     """
+
+    if auto:
+        print(f"[AUTO] Sende JOIN für {handle}:{port}")
+        send_udp_broadcast(f"JOIN {handle} {port}", whoisport)
+        time.sleep(1)
+        print(f"[AUTO] Sende WHO")
+        send_udp_broadcast("WHO", whoisport)
+        time.sleep(3)
+        return
+
+    # Manueller Modus
     print("Discovery Test CLI:")
     print("1 - JOIN")
     print("2 - LEAVE")
@@ -14,11 +26,13 @@ def start_cli():
     while True:
         choice = input(">> ").strip()
         if choice == "1":
-            send_udp_broadcast("JOIN Ayman 5000", 4000)
+            send_udp_broadcast(f"JOIN {handle} {port}", whoisport)
         elif choice == "2":
-            send_udp_broadcast("LEAVE Ayman", 4000)
+            send_udp_broadcast(f"LEAVE {handle}", whoisport)
         elif choice == "3":
-            send_udp_broadcast("WHO", 4000)
-        elif choice == "q":
+            send_udp_broadcast("WHO", whoisport)
+        elif choice.lower() == "q":
             break
+        else:
+            print("Ungültige Eingabe.")
         time.sleep(1)
