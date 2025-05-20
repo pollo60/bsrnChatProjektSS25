@@ -27,7 +27,7 @@ def ermittle_ip_und_broadcast():
 
 
 
-#Client file?
+# Client file?
 # Abfrage der Benutzerdaten zum Befüllen der Hashmap
 def datenAufnehmen():
 

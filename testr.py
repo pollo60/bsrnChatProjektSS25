@@ -2,7 +2,7 @@
 import sys
 import toml
 
-from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG, nachrichtSenden
+from Altays_Ansatz.discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG, nachrichtSenden
 from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain, discoveryWHO
 
 
