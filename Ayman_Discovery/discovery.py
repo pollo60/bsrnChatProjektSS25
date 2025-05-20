@@ -50,8 +50,14 @@ class DiscoveryService:
                     message = data.decode().strip()
                     print(f"\n📥 Neue Nachricht von {addr}: {message}")
                     self.handle_message(message, addr, sock)
+                
+                except ConnectionResetError:
+                    # Fehlermeldung speziell für die WinError10054: Socket wurde auf EMpfängerseite unerwatet geschlossen
+                    printf("⚠️ Verbindung wurde vom Empfänger unerwartet getrennt (ignoriert).")
+
                 except Exception as e:
-                    print(f"⚠️ Fehler beim Empfangen: {e}")
+                    # Andere erwartete Fehler
+                    printf(f"⚠️ Fehler beim Empfangen: {e}")
 
     def handle_message(self, message, addr, sock):
         """
