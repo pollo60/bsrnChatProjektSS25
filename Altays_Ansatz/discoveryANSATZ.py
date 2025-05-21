@@ -33,6 +33,9 @@ def ermittle_ip_und_broadcast():
 def datenAufnehmen():
 
     ip, ipnetz = ermittle_ip_und_broadcast()
+    # ip = get_local_ip()  # deine LAN‑IP
+    # Statt ip + '/24':
+    ipnetz = "255.255.255.255"
     login_daten = {}
 
     login_daten['name']   = input("Gib Deinen Namen ein: ").strip()
