@@ -1,48 +1,23 @@
-# config_utility.py
+import os
+import getpass
+import toml
+import socket
 
-import os               # Für Dateipfade
-import getpass           # Für Benutzername
-import toml              # Für TOML-Dateien
-import socket            # Für IP-Ermittlung
-
-# ---------------------------------------------------------
-# 1) Pfad zur benutzerspezifischen Konfigurationsdatei
-# ---------------------------------------------------------
 def get_config_path():
-    """
-    Gibt den Pfad zur Config-Datei im Verzeichnis ~/.bsrnchat zurück.
-    Jede Datei heißt config_<username>.toml.
-    """
-    username = getpass.getuser()  # Aktueller Nutzer
-    config_dir = os.path.expanduser("~/.bsrnchat")  # Verzeichnis im Home
-    os.makedirs(config_dir, exist_ok=True)  # Erstelle Ordner, falls er fehlt
+    username = getpass.getuser()
+    config_dir = os.path.expanduser("~/.bsrnchat")
+    os.makedirs(config_dir, exist_ok=True)
     return os.path.join(config_dir, f"config_{username}.toml")
 
-# Einmalig ermittelter Pfad zur Config
 CONFIG_PATH = get_config_path()
 
-# ---------------------------------------------------------
-# 2) IP- und Broadcast-Adresse (/24-Netz) ermitteln
-# ---------------------------------------------------------
 def ermittle_ip_und_broadcast():
-    """
-    Bestimmt die lokale IP und die Broadcast-Adresse für das /24-Subnetz.
-    """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))  # Dummy-Connect, um Interface zu wählen
-    ip = s.getsockname()[0]
-    s.close()
+    hostname = socket.gethostname()
+    ip = socket.gethostbyname(hostname)
     broadcast = ip.rsplit('.', 1)[0] + '.255'
     return ip, broadcast
 
-# ---------------------------------------------------------
-# 3) Login-Daten-Helper für CLI
-# ---------------------------------------------------------
 def datenAufnehmen():
-    """
-    Fragt Name, Port und Willkommensnachricht ab;
-    ermittelt IP und Broadcast automatisch.
-    """
     ip, ipnetz = ermittle_ip_und_broadcast()
     print(f"[DEBUG] Lokale IP = {ip}, Broadcast = {ipnetz}")
     return {
@@ -53,33 +28,24 @@ def datenAufnehmen():
         'ipnetz': ipnetz
     }
 
-# ---------------------------------------------------------
-# 4) Config schreiben/aktualisieren
-# ---------------------------------------------------------
-def inConfigSchreiben(login_daten):
-    """
-    Schreibt oder aktualisiert die Sektion 'login_daten' in der Config.
-    """
+def inConfigSchreiben(login_daten, config_path=None):
+    if config_path is None:
+        config_path = CONFIG_PATH
+        
     try:
         try:
-            with open(CONFIG_PATH, 'r') as f:
+            with open(config_path, 'r') as f:
                 cfg = toml.load(f)
         except FileNotFoundError:
             cfg = {}
         cfg['login_daten'] = login_daten
-        with open(CONFIG_PATH, 'w') as f:
+        with open(config_path, 'w') as f:
             toml.dump(cfg, f)
         print("Config-Datei wurde aktualisiert.")
     except Exception as e:
         print("Fehler beim Schreiben der Config-Datei:", e)
 
-# ---------------------------------------------------------
-# 5) Config anzeigen
-# ---------------------------------------------------------
 def zeigeConfig():
-    """
-    Zeigt die aktuell gespeicherten Login-Daten aus der Config an.
-    """
     try:
         with open(CONFIG_PATH, 'r') as f:
             cfg = toml.load(f)

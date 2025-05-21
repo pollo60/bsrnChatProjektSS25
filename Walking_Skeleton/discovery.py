@@ -1,32 +1,14 @@
-# discovery.py
-
-import os
-import getpass
 import socket
 import toml
 import threading
+import time
 
-from network import send_udp_broadcast, MSG  # Annahme: MSG zum Senden einzelner Nachrichten
-from config_utility import get_config_path, datenAufnehmen, inConfigSchreiben, zeigeConfig, ermittle_ip_und_broadcast         # Ermittelt Pfad zur User-Config
-
-
-
+from network import MSG
+from config_utility import get_config_path
 
 CONFIG_PATH = get_config_path()
 
-
-
-
-
-
-# ---------------------------------------------------------
-# 4) Einheitliche WHO(): Broadcast senden & Config updaten
-# ---------------------------------------------------------
 def WHO(timeout=3):
-    """
-    Liest ipnetz/port aus der Config, sendet WHO-Broadcast, sammelt Antworten
-    und speichert neue Teilnehmer in der Config.
-    """
     try:
         with open(CONFIG_PATH, 'r') as f:
             cfg = toml.load(f)
@@ -55,7 +37,6 @@ def WHO(timeout=3):
                 print("Fehler beim Empfangen:", e)
                 break
 
-        # Config updaten
         neue = False
         for name, ip, p in antworten:
             print(f"Antwort von {name} -> IP: {ip}, Port: {p}")
@@ -78,10 +59,6 @@ def WHO(timeout=3):
         try: sock.close()
         except: pass
 
-
-# ---------------------------------------------------------
-# 5) Unicast-WHO an einzelne bekannte Kontakte
-# ---------------------------------------------------------
 def unicastWHO(timeout=1):
     antworten = []
     try:
@@ -105,20 +82,12 @@ def unicastWHO(timeout=1):
         print("Fehler bei unicastWHO():", e)
     return antworten
 
-
-# ---------------------------------------------------------
-# 6) Nachricht an bestimmten Empfänger senden
-# ---------------------------------------------------------
 def nachrichtSenden():
     empfaenger = input("Empfänger: ").strip()
     MSG(empfaenger, CONFIG_PATH)
 
-
-# ---------------------------------------------------------
-# 7) DiscoveryService-Klasse (JOIN/WHO/LEAVE)
-# ---------------------------------------------------------
 DISCOVERY_PORT = 4000
-BUFFER_SIZE     = 1024
+BUFFER_SIZE = 1024
 
 class DiscoveryService:
     def __init__(self):
@@ -130,24 +99,55 @@ class DiscoveryService:
         except:
             self.whoisport = DISCOVERY_PORT
         self.lock = threading.Lock()
+        self.listener_thread = None
 
     def start(self):
-        t = threading.Thread(target=self.listen_for_messages, daemon=True)
-        t.start()
+        self.listener_thread = threading.Thread(target=self.listen_for_messages, daemon=True)
+        self.listener_thread.start()
+        print(f"Discovery Service laeuft auf Port {self.whoisport}")
+        self.announce_join()
+
+    def announce_join(self):
+        try:
+            with open(CONFIG_PATH, 'r') as f:
+                cfg = toml.load(f)
+            login = cfg['login_daten']
+            name = login['name']
+            port = login['port']
+            ipnetz = login['ipnetz']
+            
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            message = f"JOIN {name} {port}"
+            sock.sendto(message.encode(), (ipnetz, self.whoisport))
+            sock.close()
+            print(f"JOIN Broadcast gesendet: {name} auf Port {port}")
+        except Exception as e:
+            print(f"Fehler beim JOIN Broadcast: {e}")
 
     def listen_for_messages(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind(('', self.whoisport))
-        print(f"🌐 Discovery läuft auf Port {self.whoisport}...")
-        while self.running:
-            try:
-                daten, addr = sock.recvfrom(BUFFER_SIZE)
-                msg = daten.decode().strip()
-                print(f"Nachricht von {addr}: {msg}")
-                self.handle_message(msg, addr, sock)
-            except Exception as e:
-                print(f"Fehler im Listener: {e}")
+        try:
+            sock.bind(('', self.whoisport))
+            print(f"Discovery Service gebunden an Port {self.whoisport}")
+            
+            while self.running:
+                try:
+                    daten, addr = sock.recvfrom(BUFFER_SIZE)
+                    msg = daten.decode().strip()
+                    print(f"Discovery Nachricht von {addr}: {msg}")
+                    self.handle_message(msg, addr, sock)
+                except Exception as e:
+                    if self.running:
+                        print(f"Fehler im Listener: {e}")
+                    time.sleep(0.1)
+                    
+        except Exception as e:
+            print(f"Schwerwiegender Fehler im Discovery Service: {e}")
+        finally:
+            sock.close()
+            print("Discovery Listener beendet")
 
     def handle_message(self, message, addr, sock):
         parts = message.split()
@@ -158,16 +158,29 @@ class DiscoveryService:
             h, p = parts[1], int(parts[2])
             with self.lock:
                 self.clients[h] = (addr[0], p)
-            print(f"✅ {h} online unter {addr[0]}:{p}")
+            print(f"{h} online unter {addr[0]}:{p}")
+            
+            # Antwort mit eigenen Daten
+            try:
+                with open(CONFIG_PATH, 'r') as f:
+                    cfg = toml.load(f)
+                login = cfg['login_daten']
+                my_name = login['name']
+                my_port = login['port']
+                response = f"JOIN {my_name} {my_port}"
+                sock.sendto(response.encode(), addr)
+            except Exception as e:
+                print(f"Fehler beim Senden der JOIN-Antwort: {e}")
+                
         elif cmd == 'WHO':
             self.send_known_users(addr, sock)
         elif cmd == 'LEAVE' and len(parts)==2:
             h = parts[1]
             with self.lock:
                 self.clients.pop(h, None)
-            print(f"👋 {h} hat das Netzwerk verlassen.")
+            print(f"{h} hat das Netzwerk verlassen.")
         else:
-            print(f"❌ Unbekannter Befehl: {message}")
+            print(f"Unbekannter Discovery-Befehl: {message}")
 
     def send_known_users(self, target, sock):
         with self.lock:
@@ -177,8 +190,27 @@ class DiscoveryService:
                 payload = ', '.join(f"{h}:{p}" for h,(i,p) in self.clients.items())
         resp = f"KNOWUSERS {payload}\n"
         sock.sendto(resp.encode(), target)
-        print(f"📤 Gesendet an {target}: {resp.strip()}")
+        print(f"Gesendet an {target}: {resp.strip()}")
 
     def stop(self):
+        # LEAVE Broadcast senden
+        try:
+            with open(CONFIG_PATH, 'r') as f:
+                cfg = toml.load(f)
+            login = cfg['login_daten']
+            name = login['name']
+            ipnetz = login['ipnetz']
+            
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            message = f"LEAVE {name}"
+            sock.sendto(message.encode(), (ipnetz, self.whoisport))
+            sock.close()
+            print(f"LEAVE Broadcast gesendet: {name}")
+        except Exception as e:
+            print(f"Fehler beim LEAVE Broadcast: {e}")
+        
         self.running = False
-        print("🛑 Discovery gestoppt.")
+        if self.listener_thread:
+            self.listener_thread.join(timeout=1.0)
+        print("Discovery Service gestoppt.")
