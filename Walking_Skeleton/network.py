@@ -71,4 +71,18 @@ def MSG(empfaenger, CONFIG_PATH):
         sock.close()
 
 
-
+# ---------------------------------------------------------
+# IP- und Broadcast-Adresse ermitteln (Standard /24-Netz)  FUER NETWORK
+# ---------------------------------------------------------
+def ermittle_ip_und_broadcast():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Dummy-Connect, um Interface zu wählen
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]     # Lokale IP
+    s.close()
+    # Erzeuge /24-Netz auf Basis der IP
+    net = socket.inet_ntoa(socket.inet_aton(ip))  # rein gefahrloser Platzhalter
+    # Tatsächliche Netzberechnung via ipaddress falls gewünscht:
+    # import ipaddress; net = ipaddress.ip_network(ip + '/24', strict=False)
+    broadcast = ip.rsplit('.', 1)[0] + '.255'
+    return ip, broadcast

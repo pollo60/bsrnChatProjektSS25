@@ -3,13 +3,12 @@ import getpass
 import os
 import toml
 
-# Pfad zur benutzerspezifischen Konfigurationsdatei definieren
-# Im Ordner/.bsrnchat wird für jeden client eine individuelle Konfiguarationsdatei erstellt
-def get_config_path():
-    username = getpass.getuser()    # Mit den Funktionen aus getpass wird der Benutzer identifiziert
-    config_dir = os.path.expanduser("~/.bsrnchat")  # Pfadangabe der Datei
-    os.makedirs(config_dir, exist_ok=True)  # Erstellen des Verzeichnis falls noch nicht vorhanden
-    return os.path.join(config_dir, f"config_{username}.toml")  # Ausgeben des Dateipfades
+from discovery import WHO, nachrichtSenden, unicastWHO
+from network import ermittle_ip_und_broadcast
+from config_utility import get_config_path, datenAufnehmen, inConfigSchreiben, zeigeConfig, ermittle_ip_und_broadcast         # Ermittelt Pfad zur User-Config
+
+
+
 
 CONFIG_PATH = get_config_path() # Aufrufen der Funktion um den Dateipfad weiterverbinden zukönnen
 
@@ -19,10 +18,10 @@ def zeige_menue():
     print("\n Menue:")
     print("1: \t WHO - Zeige Teilnehmer")             # Option zur Anzeige aller aktuell verbundenen Clients
     print("2: \t MSG - Nachricht senden")             # Option zum Senden einer Nachricht an andere Teilnehmer
-    print("3: \t EXIT - Beenden")                     # Option zum Beenden des Programms
+    print("3: \t unicastWHO")                     # Option zur gezielten WHO-Anfrage an einen bestimmten Client
     print("4: \t Kontakt anlegen")                   # Option zum Hinzufügen eines neuen Kontakts zur Kontaktliste
     print("5: \t Kontakte anzeigen")                 # Option zur Anzeige aller gespeicherten Kontakte
-    print("6: \t unicastWHO")                        # Option zur gezielten WHO-Anfrage an einen bestimmten Client
+    print("6: \t EXIT - Beenden")                        # Option zum Beenden des Programms 
 
 # Funktion fuer den Start des Programms mit Login
 def startup(CONFIG_PATH):
@@ -33,11 +32,11 @@ def startup(CONFIG_PATH):
         inConfigSchreiben(daten, CONFIG_PATH)   # Speichern der Daten in der neuen Konfigurationsdatei
     else:
         print(f"Config-Datei '{CONFIG_PATH}' gefunden.")  # Info: bestehende Konfiguration wurde erkannt
-        zeigeConfig(CONFIG_PATH)                          # Anzeige der aktuellen Konfigurationsdaten
+        zeigeConfig()                          # Anzeige der aktuellen Konfigurationsdaten
         configAendern = input("Möchtest Du Deine Config-Datei bearbeiten? (y/n) ").strip().lower()
         if configAendern == "y":
             login_daten = datenAufnehmen()                # Neue Eingabe der Login-Daten
-            inConfigSchreiben(login_daten, CONFIG_PATH)   # Überschreiben der bisherigen Konfiguration
+            inConfigSchreiben(login_daten)   # Überschreiben der bisherigen Konfiguration
 
     return CONFIG_PATH  # Rückgabe des Pfades zur verwendeten Konfigurationsdatei
 
@@ -86,6 +85,64 @@ def kontakteZeigen():
         # Falls Datei nicht existiert, entsprechende Fehlermeldung anzeigen
         print(f"Datei '{CONFIG_PATH}' nicht gefunden.")
 
+
+
+
+
+# ---------------------------------------------------------
+# Login-Daten abfragen: Name, Port, Willkommensnachricht FUER CLI
+# ---------------------------------------------------------
+def datenAufnehmen():
+    ip, ipnetz = ermittle_ip_und_broadcast()
+    print(f"[DEBUG] Lokale IP = {ip}, Broadcast = {ipnetz}")
+    name = input("Gib Deinen Namen ein: ").strip().lower()
+    port = input("Gib Deine Portnummer ein: ").strip()
+    hallo = input("Gib eine automatische Willkommensnachricht ein: ").strip()
+    return {
+        'name': name,
+        'port': port,
+        'ip': ip,
+        'hallo': hallo,
+        'ipnetz': ipnetz
+    }
+
+
+# ---------------------------------------------------------
+# Login-Daten in Config schreiben oder updaten          FUER CLI
+# ---------------------------------------------------------
+def inConfigSchreiben(login_daten):
+    try:
+        # Bestehende Config einlesen, falls vorhanden
+        try:
+            with open(CONFIG_PATH, 'r') as f:
+                cfg = toml.load(f)
+        except FileNotFoundError:
+            cfg = {}
+        # Schreibe unter 'login_daten'
+        cfg['login_daten'] = login_daten
+        with open(CONFIG_PATH, 'w') as f:
+            toml.dump(cfg, f)
+        print("Config-Datei wurde aktualisiert.")
+    except Exception as e:
+        print("Fehler beim Schreiben der Config-Datei:", e)
+
+
+# ---------------------------------------------------------
+# Gespeicherte Login-Daten anzeigen                             FUER CLI
+# ---------------------------------------------------------
+def zeigeConfig():
+    try:
+        with open(CONFIG_PATH, 'r') as f:
+            cfg = toml.load(f)
+        login = cfg.get('login_daten', {})
+        print(login.get('name', ''))
+        print(login.get('port', ''))
+        print(login.get('ip', ''))
+        print(login.get('hallo', ''))
+    except Exception as e:
+        print("Fehler beim Lesen der Config-Datei:", e)
+
+
 #####################################################################################
 
 # Hauptfunktion zum Programmstart
@@ -100,7 +157,7 @@ def main():
 
     CONFIG_PATH = startup(CONFIG_PATH)     # Aufruf der Start- bzw. Loginroutine
 
-    netzwerkEmpfMain(CONFIG_PATH)          # Start der Netzwerkempfangslogik (z. B. Thread oder Loop)
+    #netzwerkEmpfMain(CONFIG_PATH)          # Start der Netzwerkempfangslogik (z. B. Thread oder Loop)
 
     WHO(CONFIG_PATH)                       # Senden einer WHO-Anfrage zur Teilnehmerermittlung
 
@@ -111,11 +168,11 @@ def main():
         wahl = input("Gib eine Zahl ein (1-5): ").strip()  # Benutzereingabe zur Auswahl
 
         if wahl == "1":
-            WHO(CONFIG_PATH)  # Aufruf der Funktion zur Anzeige der verbundenen Teilnehmer
+            WHO()  # Aufruf der Funktion zur Anzeige der verbundenen Teilnehmer
         elif wahl == "2":
-            nachrichtSenden(CONFIG_PATH)  # Aufruf der Funktion zum Versenden einer Nachricht
+            nachrichtSenden()  # Aufruf der Funktion zum Versenden einer Nachricht
         elif wahl == "3":
-            print(" -> Programm wird beendet")  # Hinweis zur Beendigung
+            unicastWHO()  # WHO-Anfrage gezielt an einen Kontakt senden
             sys.exit()  # Programm wird ordnungsgemäß beendet
         elif wahl == "4":
             empfaenger = input("Name des Kontakts: ").strip().lower()  # Name des neuen Kontakts abfragen
@@ -124,7 +181,7 @@ def main():
         elif wahl == "5":
             kontakteZeigen()  # Alle gespeicherten Kontakte werden angezeigt
         elif wahl == "6":
-            unicastWHO(CONFIG_PATH)  # WHO-Anfrage gezielt an einen Kontakt senden
+            print(" -> Programm wird beendet")  # Hinweis zur Beendigung
         else:
             # Falls keine gültige Eingabe (1–6), Hinweis zur Korrektur
             print("Ungueltige Eingabe. Bitte 1, 2, 3, 4, 5 oder 6 eingeben.")
