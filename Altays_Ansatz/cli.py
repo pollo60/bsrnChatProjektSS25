@@ -121,13 +121,13 @@ def main():
             print(" -> Programm wird beendet")
             sys.exit()
         elif wahl == "4":
-            empfaenger = input("Name des Kontakts: ")
+            empfaenger = input("Name des Kontakts: ").strip().lower()
             empfaenger.lower()
             kontaktAnlegen(empfaenger)
         elif wahl == "5":
             kontakteZeigen()
         elif wahl == "6":
-            unicastWHO()
+            unicastWHO(CONFIG_PATH)
         else:
             print("Ungueltige Eingabe. Bitte 1, 2, 3, 4 oder 5 eingeben.")
 
