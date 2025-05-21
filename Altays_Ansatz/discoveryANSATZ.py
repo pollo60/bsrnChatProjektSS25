@@ -30,6 +30,7 @@ def ermittle_ip_und_broadcast():
 def datenAufnehmen():
 
     ip, ipnetz = ermittle_ip_und_broadcast()
+    print(f"[DEBUG] Lokale IP = {ip}, gewähltes Broadcast = {ipnetz}")
     # ip = get_local_ip()  # deine LAN‑IP
     # Statt ip + '/24':
     #ipnetz = "255.255.255.255"
