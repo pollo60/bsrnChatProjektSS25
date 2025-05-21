@@ -155,11 +155,14 @@ def main():
         print(" -> Programm wird beendet")  # Hinweis bei Abbruch
         sys.exit()                         # Beenden des Programms
 
+    ip, ipnetz = ermittle_ip_und_broadcast()
+    print(f"[DEBUG] Lokale IP = {ip}, Broadcast = {ipnetz}")
+    
     CONFIG_PATH = startup(CONFIG_PATH)     # Aufruf der Start- bzw. Loginroutine
 
     #netzwerkEmpfMain(CONFIG_PATH)          # Start der Netzwerkempfangslogik (z. B. Thread oder Loop)
 
-    WHO(CONFIG_PATH)                       # Senden einer WHO-Anfrage zur Teilnehmerermittlung
+    WHO()                       # Senden einer WHO-Anfrage zur Teilnehmerermittlung
 
     print("Wilkommen! Was moechtest Du tun?")  # Begrüßung und Übergang zum Menü oder zur Hauptroutine
 
