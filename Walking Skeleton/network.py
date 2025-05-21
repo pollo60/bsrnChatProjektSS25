@@ -6,15 +6,19 @@ import socket
 import threading
 
 
-def send_udp_broadcast(CONFIG_PATH):
+def send_udp_broadcast(CONFIG_PATH, message):
     
     with open(CONFIG_PATH, 'r') as f:
         config = toml.load(f)
     
+    
     PORT = int(config['login_daten']['port'])
-    IP = config['login_daten']['ip']
-    message = config['login_daten']['hallo']
-    BUFFER_SIZE = 1024
+    IPNETZ = config['login_daten']['ipnetz']
+
+    addr = {}
+    addr [0] = IPNETZ
+    addr [1] = PORT
+
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -23,7 +27,7 @@ def send_udp_broadcast(CONFIG_PATH):
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.sendto(message.encode(), ('255.255.255.255', PORT))
+            sock.sendto(message.encode("utf-8"), addr)
             print(f"[Network] Broadcast gesendet: {message}")
 
 
