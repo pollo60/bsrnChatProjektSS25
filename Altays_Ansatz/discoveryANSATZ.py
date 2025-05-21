@@ -11,18 +11,15 @@ from Netzwerk_Kommunikation.sender import discoveryWHO, MSG
 
 # Eigene IP Adresse automatisch abfragen und in Config schreiben (login_daten: ip, ipnetz)
 def ermittle_ip_und_broadcast():
-    try:
-        # Dummy-Verbindung zur Ermittlung der aktiven Netzwerkschnittstelle
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))  # Verbindet sich nicht wirklich
-        ip = s.getsockname()[0]
-        s.close()
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Dummy‑Connect über das Interface
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
 
-        ipnetz = ipaddress.ip_network(ip + '/24', strict=False)
-        return str(ip), str(ipnetz.broadcast_address)
-    except Exception as e:
-        print("Fehler bei IP-Ermittlung:", e)
-        raise RuntimeError("Netzwerkverbindung erforderlich, um IP zu ermitteln.")
+    # Erzeuge ein /24‑Netz (oder passe deine Maske an)
+    net = ipaddress.ip_network(ip + '/24', strict=False)
+    return str(ip), str(net.broadcast_address)  # z.B. "172.20.10.255"
 
 
 
@@ -35,7 +32,7 @@ def datenAufnehmen():
     ip, ipnetz = ermittle_ip_und_broadcast()
     # ip = get_local_ip()  # deine LAN‑IP
     # Statt ip + '/24':
-    ipnetz = "255.255.255.255"
+    #ipnetz = "255.255.255.255"
     login_daten = {}
 
     login_daten['name']   = input("Gib Deinen Namen ein: ").strip()
