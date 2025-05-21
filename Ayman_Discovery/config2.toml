@@ -1,5 +1,5 @@
-handle = "Tom"
-port = 5001
+handle = "Ayman"
+port = 5000
 whoisport = 4000
 autoreply = "Ich bin gerade nicht da."
 imagepath = "./images"
