@@ -5,7 +5,7 @@ import getpass
 import os
 import toml
 
-from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, MSG, nachrichtSenden
+from discoveryANSATZ import datenAufnehmen, inConfigSchreiben, zeigeConfig, WHO, unicastWHO, nachrichtSenden
 from Netzwerk_Kommunikation.empfaenger import netzwerkEmpfMain
 
 
@@ -28,6 +28,7 @@ def zeige_menue():
     print("3: \t EXIT - Beenden")
     print("4: \t Kontakt anlegen")
     print("5: \t Kontakte anzeigen")
+    print("6: \t unicastWHO")
 
 
 # Funktion fuer den Start des Programms mit Login
@@ -125,6 +126,8 @@ def main():
             kontaktAnlegen(empfaenger)
         elif wahl == "5":
             kontakteZeigen()
+        elif wahl == "6":
+            unicastWHO()
         else:
             print("Ungueltige Eingabe. Bitte 1, 2, 3, 4 oder 5 eingeben.")
 

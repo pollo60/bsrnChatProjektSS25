@@ -124,3 +124,26 @@ def WHO(CONFIG_PATH):
 def nachrichtSenden(CONFIG_PATH):
     empfaenger = input("Empfaenger: ")
     MSG(empfaenger, CONFIG_PATH)
+
+
+
+
+
+def unicastWHO(CONFIG_PATH, port, timeout=1):
+     # Konfiguration laden
+    with open(CONFIG_PATH, 'r') as f:
+        config = toml.load(f)
+        antworten = []
+    for name, data in config.items():
+        if name == 'login_daten': continue
+        ziel = (data['ziel_ip'], int(data['ziel_port']))
+        try:
+            sock = socket.socket(...); sock.settimeout(timeout)
+            sock.sendto(b"WHO", ziel)
+            daten, addr = sock.recvfrom(1024)
+            antworten.append((daten.decode().strip(), addr))
+        except socket.timeout:
+            pass
+        finally:
+            sock.close()
+    return antworten
