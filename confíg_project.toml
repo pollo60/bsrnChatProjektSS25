@@ -1,0 +1,26 @@
+import toml
+from filelock import FileLock  # Für Synchronisation (Schritt 3)
+
+class ConfigHandler:
+    def __init__(self, config_path="config_project.toml"):
+        self.config_path = config_path
+
+    def read_config(self):
+        """Liest die TOML-Konfigurationsdatei."""
+        with FileLock(self.config_path + ".lock"):  # Sperre für parallelen Zugriff
+            with open(self.config_path, "r") as file:
+                return toml.load(file)
+
+    def write_config(self, data):
+        """Aktualisiert die TOML-Konfigurationsdatei."""
+        with FileLock(self.config_path + ".lock"):
+            with open(self.config_path, "w") as file:
+                toml.dump(data, file)
+
+    def update_handle(self, new_handle):
+        """Aktualisiert den Benutzer-Handle in der Konfiguration."""
+        config = self.read_config()
+        config["handle"] = new_handle
+        self.write_config(config)
+
+        
