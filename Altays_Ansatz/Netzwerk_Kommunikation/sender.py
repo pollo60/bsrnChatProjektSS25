@@ -4,8 +4,7 @@ import toml
 
 # Funktion zum Senden einer Nachricht an einen spezifischen Empfänger
 def MSG(empfaenger, CONFIG_PATH):
-    import toml
-    import socket
+
 
     # 1. Konfiguration laden
     try:
@@ -54,6 +53,7 @@ def discoveryWHO(ipnetz, port, timeout=3):
         sock.settimeout(timeout)
 
         # WHO senden
+        ipnetz = "localhost"
         sock.sendto(b"WHO", (ipnetz, port))
         print("WHO-Broadcast gesendet.")
 

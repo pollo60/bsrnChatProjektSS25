@@ -14,10 +14,17 @@ def empfangsschleife(CONFIG_PATH):
     # IP = config['login_daten']['ip']
     BUFFER_SIZE = 1024
 
-    # Socket erstellen und binden
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # akzeptiert Broadcasts
-    sock.bind(('', PORT)) # Offene IP fuer den Empfang von Broadcast und Unicast Nachrichten
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.bind(('', PORT))
+
+
+    # Socket erstellen und binden
+    #sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) # akzeptiert Broadcasts
+    #sock.bind(('', PORT)) # Offene IP fuer den Empfang von Broadcast und Unicast Nachrichten
 
     print("Warte auf Nachrichten...")
 
