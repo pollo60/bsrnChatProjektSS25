@@ -29,36 +29,46 @@ def send_udp_broadcast(CONFIG_PATH, message):
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             sock.sendto(message.encode("utf-8"), addr)
             print(f"[Network] Broadcast gesendet: {message}")
+    
 
+# Funktion zum Senden einer Nachricht an einen spezifischen Empfänger
+def MSG(empfaenger, CONFIG_PATH):
 
+    # 1. Konfiguration laden
+    try:
+        with open(CONFIG_PATH, 'r') as f:
+            config = toml.load(f)
+    except FileNotFoundError:
+        print("Konfigurationsdatei nicht gefunden.")
+        return
 
+    # 2. Kontaktschlüssel case‑insensitive finden
+    gesucht = empfaenger.strip().lower()
+    key = next((k for k in config if k.lower() == gesucht), None)
+    if key is None or key == 'login_daten':
+        print(f"Empfänger '{empfaenger}' nicht gefunden. Verfügbare Kontakte: {[k for k in config if k!='login_daten']}")
+        return
 
+    # 3. IP und Port sauber auslesen und strippen
+    data = config[key]
+    ZIEL_IP   = data['ziel_ip'].strip()
+    ZIEL_PORT = int(str(data['ziel_port']).strip())
 
-def empfangsschleifeWHO(CONFIG_PATH):
-    # Konfiguration laden
-    with open(CONFIG_PATH, 'r') as f:
-        config = toml.load(f)
+    # 4. Nachricht vom Benutzer abfragen
+    nachricht = input("Nachricht: ").strip()
 
-    PORT = int(config['login_daten']['port'])
-    IP = config['login_daten']['ip']
-    BUFFER_SIZE = 1024
+    # 5. Debug-Ausgabe
+    print(f"[DEBUG] Sende Nachricht an {key} -> IP={ZIEL_IP!r}, Port={ZIEL_PORT}")
 
+    # 6. Nachricht per UDP senden
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.bind(('', PORT))
+    try:
+        sock.sendto(nachricht.encode("utf-8"), (ZIEL_IP, ZIEL_PORT))
+        print(f"Nachricht an {ZIEL_IP}:{ZIEL_PORT} gesendet.")
+    except Exception as e:
+        print("Send-Error:", e)
+    finally:
+        sock.close()
 
-    print("Warte auf Nachrichten...")
 
-    # Endlosschleife zum Empfangen
-    while True:
-        daten, addr = sock.recvfrom(BUFFER_SIZE)
-        message = daten.decode("utf-8").strip()
-        print(f"Nachricht von {addr[0]}:{addr[1]} -> {message}")
-
-        # Falls WHO empfangen wird, automatische Antwort senden
-        if message == "WHO":
-            antwort = f"{config['login_daten']['name']}|{config['login_daten'][IP]}|{config['login_daten'][PORT]}"
-            sock.sendto(antwort.encode("utf-8"), addr)
-            print(f"[Antwort gesendet] an {addr}")
 
