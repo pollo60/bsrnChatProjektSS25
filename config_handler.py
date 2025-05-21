@@ -28,4 +28,10 @@ class ConfigHandler:
                 toml.dump(data, file)
 
     def update
-    
+
+      def update_config(self, key, value):
+        """Aktualisiert einen bestimmten Wert in der Konfigurationsdatei."""
+        with FileLock(self.config_path + ".lock"):
+            config = self.read_config()
+            config[key] = value
+            self.write_config(config)
