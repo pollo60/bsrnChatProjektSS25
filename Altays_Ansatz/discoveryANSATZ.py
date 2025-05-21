@@ -16,7 +16,6 @@ def ermittle_ip_und_broadcast():
     s.connect(("8.8.8.8", 80))
     ip = s.getsockname()[0]
     s.close()
-
     # Erzeuge ein /24‑Netz (oder passe deine Maske an)
     net = ipaddress.ip_network(ip + '/24', strict=False)
     return str(ip), str(net.broadcast_address)  # z.B. "172.20.10.255"

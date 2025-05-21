@@ -11,7 +11,7 @@ def empfangsschleife(CONFIG_PATH):
         config = toml.load(f)
 
     PORT = int(config['login_daten']['port'])
-    # IP = config['login_daten']['ip']
+    IP = config['login_daten']['ip']
     BUFFER_SIZE = 1024
 
 

@@ -5,7 +5,6 @@ import toml
 # Funktion zum Senden einer Nachricht an einen spezifischen Empfänger
 def MSG(empfaenger, CONFIG_PATH):
 
-
     # 1. Konfiguration laden
     try:
         with open(CONFIG_PATH, 'r') as f:
@@ -42,7 +41,7 @@ def MSG(empfaenger, CONFIG_PATH):
     finally:
         sock.close()
 
-
+#############################################################
 # Funktion zum Senden eines WHO-Broadcasts
 def discoveryWHO(ipnetz, port, timeout=3):
     antworten = []
