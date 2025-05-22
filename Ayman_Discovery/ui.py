@@ -1,6 +1,7 @@
 from network import send_udp_broadcast, nachrichtSenden
 from config_utility import kontaktAnlegen, kontakteZeigen
 import time
+from config_utility import check_for_contact_list
 
 
 def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="", contacts_path=""):
@@ -37,11 +38,13 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
         elif choice == "3":
             send_udp_broadcast(f"WHO {handle}", whoisport)
         elif choice == "4":
+            check_for_contact_list(contacts_path)
             empfaenger = input("Name des Kontakts:")
             kontaktAnlegen(empfaenger, contacts_path)
         elif choice == "5":
             nachrichtSenden(contacts_path)
         elif choice == "6":
+            check_for_contact_list(contacts_path)
             kontakteZeigen(contacts_path)
         elif choice.lower() == "q":
             break

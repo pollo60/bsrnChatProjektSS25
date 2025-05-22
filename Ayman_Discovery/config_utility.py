@@ -73,9 +73,7 @@ def write_contacts(name, contacts_path):
 
 # Funktion zum Anlegen eines neuen Kontakts
 def kontaktAnlegen(empfaenger, contacts_path):
-    check_for_contact_list(contacts_path)
-
-
+    
     try:
         # Öffnen und Einlesen der bestehenden Konfigurationsdatei im TOML-Format
         with open(contacts_path, 'r') as f:
@@ -111,8 +109,7 @@ def kontaktAnlegen(empfaenger, contacts_path):
 
     # Funktion zur Anzeige aller gespeicherten Kontakte
 def kontakteZeigen(contacts_path):
-    check_for_contact_list(contacts_path)
-
+   
     try:
         # Öffnen und Einlesen der Konfigurationsdatei
         with open(contacts_path, 'r') as f:
