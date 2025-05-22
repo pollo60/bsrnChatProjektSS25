@@ -11,6 +11,7 @@ class DiscoveryService:
         self.config = toml.load(config_path)
         self.whoisport = self.config['whoisport']
         self.my_handle = self.config.get("handle", "").strip()
+        self.my_port = self.config.get("port", 5000)
         self.lock = threading.Lock()
         self.local_ip = self.get_local_ip()
 
@@ -55,7 +56,17 @@ class DiscoveryService:
                 print(f"✅ {handle} ist jetzt online unter {addr[0]}:{port}")
 
         elif command == "WHO":
-            self.send_known_users(addr, sock)
+            # WHO muss ab jetzt WHO <Name> heißen
+            if len(parts) == 2:
+                who_sender_handle = parts[1]
+                print(f"📡 WHO-Anfrage empfangen von {who_sender_handle} ({addr[0]})")
+
+                # Sende automatische JOIN-Antwort zurück
+                join_message = f"JOIN {self.my_handle} {self.my_port}"
+                sock.sendto(join_message.encode(), (addr[0], self.whoisport))
+                print(f"↩️ JOIN-Antwort an {who_sender_handle} gesendet: {join_message}")
+            else:
+                print("⚠️ WHO-Nachricht ohne Handle empfangen – wird ignoriert.")
 
         elif command == "LEAVE" and len(parts) == 2:
             handle = parts[1]
