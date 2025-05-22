@@ -36,8 +36,8 @@ def kontaktAnlegen(empfaenger, config_path):
         config = {}
 
     name = empfaenger  # Name des neuen Kontakts (wird beim Funktionsaufruf übergeben)
-    port = input("Gib deine Portnummer ein: ").strip()  # Eingabe der Ziel-Portnummer durch den Benutzer
-    ip = input("Gib deine IP ein: ").strip()            # Eingabe der Ziel-IP-Adresse durch den Benutzer
+    port = input("Gib die Portnummer ein: ").strip()  # Eingabe der Ziel-Portnummer durch den Benutzer
+    ip = input("Gib die IP ein: ").strip()            # Eingabe der Ziel-IP-Adresse durch den Benutzer
 
     # Speichern der Kontaktdaten im Dictionary
     config[name] = {
