@@ -47,7 +47,7 @@ class DiscoveryService:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(('', port_value))  # Bind an lokale IPs auf dem angegebenen Port
-            print(f"📡 Lausche auf {port_name} (Port {port_value})...")
+            #print(f"📡 Lausche auf {port_name} (Port {port_value})...") #Das vielleicht nicht printen? Oder gibt das ohne Testzwecke Infos?
 
             while self.running:
                 try:
@@ -87,7 +87,7 @@ class DiscoveryService:
 
             # Rückmeldung je nach Absender
             if addr[0] == self.local_ip and handle == self.my_handle:
-                print(f"✅ Du ({handle}) hast erfolgreich dem Chat beigetreten.")
+                print(f"✅ Du ({handle}) bist erfolgreich dem Chat beigetreten!")
             else:
                 print(f"✅ {handle} ist jetzt online unter {addr[0]}:{port}")
 

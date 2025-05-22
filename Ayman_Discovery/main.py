@@ -24,7 +24,7 @@ if __name__ == "__main__":
     port = config.get("port", 5000) # Port für den Client
     whoisport = config.get("whoisport", 54321) # WHO-Port für Discovery-Kommunikation
     # Falls ein Wert fehlt, wird ein Standartwert verwendet
-    print(f"[MAIN] Starte Client '{handle}' auf Port {port} mit WHO-Port {whoisport} (auto={auto_mode})")
+    #print(f"[MAIN] Starte Client '{handle}' auf Port {port} mit WHO-Port {whoisport} (auto={auto_mode})") #Das vielleicht nicht printen? Oder gibt das ohne Testzwecke Infos?
 
     # Discovery starten
     discovery = DiscoveryService(config_path)  # Discovery-Service initialisieren
