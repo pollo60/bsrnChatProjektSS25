@@ -7,9 +7,12 @@ imagepath = "./images"
 [altay]
 ziel_name = "altay"
 ziel_port = "5003"
+<<<<<<< HEAD
+=======
 ziel_ip = "172.20.10.10:1"
 
 [Altay]
 ziel_name = "Altay"
 ziel_port = "5003"
+>>>>>>> 35ae178144ae355864e0dfafd7a4a95d50151fcf
 ziel_ip = "172.20.10.10"
