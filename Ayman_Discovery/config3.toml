@@ -14,7 +14,4 @@ ziel_name = "ayman2"
 ziel_port = "55033"
 ziel_ip = "172.20.10.14"
 
-[tom]
-ziel_name = "tom"
-ziel_port = "5001"
-ziel_ip = "172.20.10.2"
+
