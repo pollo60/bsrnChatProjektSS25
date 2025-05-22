@@ -14,7 +14,7 @@ if __name__ == "__main__":
         with open(config_path, 'r') as f:
             config = toml.load(f)
     except Exception as e:
-        print(f"❌ Fehler beim Laden der Konfigurationsdatei: {e}")
+        print(f"Fehler beim Laden der Konfigurationsdatei: {e}")
         sys.exit(1)
 
     # Werte aus der geladenen Konfiguration entnehmen
