@@ -29,7 +29,7 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
     print("q - Quit")
 
     while True:
-        choice = input(">> ").strip()
+        choice = input("Eingabe: ").strip()
         if choice == "1":
             send_udp_broadcast(f"JOIN {handle} {port}", whoisport)
         elif choice == "2":
