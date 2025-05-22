@@ -1,7 +1,9 @@
-from network import send_udp_broadcast
+from network import send_udp_broadcast, nachrichtSenden
+from config_utility import kontaktAnlegen, kontakteZeigen
 import time
 
-def start_cli(auto=False, handle="", port=5000, whoisport=54321):
+
+def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path=""):
     """
     Startet das CLI für den Nutzer.
     Im Automodus (auto=True) wird automatisch JOIN und WHO gesendet.
@@ -21,6 +23,9 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321):
     print("1 - JOIN")
     print("2 - LEAVE")
     print("3 - WHO")
+    print("4 - Kontakt anlegen")
+    print("5 - MSG")
+    print("6 - KOntakte anzeigen")
     print("q - Quit")
 
     while True:
@@ -31,6 +36,12 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321):
             send_udp_broadcast(f"LEAVE {handle}", whoisport)
         elif choice == "3":
             send_udp_broadcast("WHO", whoisport)
+        elif choice == "4":
+            kontaktAnlegen()
+        elif choice == "5":
+            nachrichtSenden()
+        elif choice == 6:
+            kontakteZeigen()
         elif choice.lower() == "q":
             break
         else:

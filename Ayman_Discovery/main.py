@@ -39,7 +39,8 @@ if __name__ == "__main__":
     discovery.start()
 
     try:
-        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport)
+#############################################################
+        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path=config_path)
     except KeyboardInterrupt:
         print("\n[MAIN] Abbruch durch Benutzer")
     finally:
