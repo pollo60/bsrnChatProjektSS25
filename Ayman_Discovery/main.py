@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     try:
 #############################################################
-        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path=config_path, contacts_path=contacts_path)
+        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path = config_path, contacts_path=contacts_path)
     except KeyboardInterrupt:
         print("\n[MAIN] Abbruch durch Benutzer")
     finally:
