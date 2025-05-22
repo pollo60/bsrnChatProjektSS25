@@ -16,7 +16,7 @@ def config_startup():
 
     # Prüfe, ob die Datei existiert
     if not os.path.isfile(config_path):
-        print(f"❌ Fehler: Die Konfigurationsdatei '{config_path}' wurde nicht gefunden.")
+        print(f"Fehler: Die Konfigurationsdatei '{config_path}' wurde nicht gefunden.")
         sys.exit(1)
     
     return config_path, auto_mode
