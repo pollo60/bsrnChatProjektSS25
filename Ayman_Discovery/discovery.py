@@ -98,10 +98,7 @@ class DiscoveryService:
                     print(f"- {h} ({ip}:{port})")
             else:
                 print("📃 Keine neuen Nutzer entdeckt (oder bereits bekannt).")
-
-        else:
-            print(f"❌ Unbekannter Befehl oder ungültige Syntax: {message}")
-
+                
     def send_known_users(self, target_addr, sock):
         with self.lock:
             if not self.clients:
