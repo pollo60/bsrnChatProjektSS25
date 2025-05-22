@@ -1,6 +1,7 @@
 from network import send_udp_broadcast, nachrichtSenden
 from config_utility import kontaktAnlegen, kontakteZeigen
 import time
+import toml
 
 
 def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path=""):
@@ -8,6 +9,13 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="")
     Startet das CLI für den Nutzer.
     Im Automodus (auto=True) wird automatisch JOIN und WHO gesendet.
     """
+
+    with open(config_path, 'r') as f:
+            config = toml.load(f)
+    
+    handle   = config['handle'].strip()
+    port = int(str(config['port']).strip())
+    whoisport = int(str(config['whoisport']).strip())
 
     if auto:
         print(f"[AUTO] Sende JOIN für {handle}:{port}")
