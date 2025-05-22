@@ -37,11 +37,12 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="")
         elif choice == "3":
             send_udp_broadcast("WHO", whoisport)
         elif choice == "4":
-            kontaktAnlegen()
+            empfaenger = input("Name des Kontakts:")
+            kontaktAnlegen(empfaenger, config_path)
         elif choice == "5":
-            nachrichtSenden()
-        elif choice == 6:
-            kontakteZeigen()
+            nachrichtSenden(config_path)
+        elif choice == "6":
+            kontakteZeigen(config_path)
         elif choice.lower() == "q":
             break
         else:
