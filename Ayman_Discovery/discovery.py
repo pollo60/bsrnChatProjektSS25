@@ -47,22 +47,22 @@ class DiscoveryService:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(('', port_value))  # Bind an lokale IPs auf dem angegebenen Port
-            #print(f"📡 Lausche auf {port_name} (Port {port_value})...") #Das vielleicht nicht printen? Oder gibt das ohne Testzwecke Infos?
+            #print(f"Lausche auf {port_name} (Port {port_value})...") #Das vielleicht nicht printen? Oder gibt das ohne Testzwecke Infos?
 
             while self.running:
                 try:
                     # Warte auf eingehende Nachricht
                     data, addr = sock.recvfrom(BUFFER_SIZE)
                     message = data.decode().strip()
-                    print(f"\n📥 Neue Nachricht auf {port_name} von {addr}: {message}")
+                    print(f"\nNeue Nachricht auf {port_name} von {addr}: {message}")
 
                     # Nachricht verarbeiten
                     self.handle_message(message, addr, sock)
 
                 except ConnectionResetError:
-                    print(f"⚠️ Verbindung auf {port_name} wurde getrennt.")
+                    print(f"Verbindung auf {port_name} wurde getrennt.")
                 except Exception as e:
-                    print(f"⚠️ Fehler beim Lauschen auf {port_name}: {e}")
+                    print(f"Fehler beim Lauschen auf {port_name}: {e}")
 
     def handle_message(self, message, addr, sock):
         """
@@ -87,23 +87,23 @@ class DiscoveryService:
 
             # Rückmeldung je nach Absender
             if addr[0] == self.local_ip and handle == self.my_handle:
-                print(f"✅ Du ({handle}) bist erfolgreich dem Chat beigetreten!")
+                print(f"Du ({handle}) bist erfolgreich dem Chat beigetreten!")
             else:
-                print(f"✅ {handle} ist jetzt online unter {addr[0]}:{port}")
+                print(f"{handle} ist jetzt online unter {addr[0]}:{port}")
 
         # --- WHO ---
         # Beispiel: WHO Alice
         elif command == "WHO":
             if len(parts) == 2:
                 who_sender_handle = parts[1]
-                print(f"📡 WHO-Anfrage empfangen von {who_sender_handle} ({addr[0]})")
+                print(f"WHO-Anfrage empfangen von {who_sender_handle} ({addr[0]})")
 
                 # Sende automatische JOIN-Antwort zurück, damit der WHO-Sender uns sehen kann
                 join_message = f"JOIN {self.my_handle} {self.my_port}"
                 sock.sendto(join_message.encode(), (addr[0], self.whoisport))
-                print(f"↩️ JOIN-Antwort an {who_sender_handle} gesendet: {join_message}")
+                print(f"JOIN-Antwort an {who_sender_handle} gesendet: {join_message}")
             else:
-                print("⚠️ WHO-Nachricht ohne Handle empfangen – wird ignoriert.")
+                print("WHO-Nachricht ohne Handle empfangen – wird ignoriert.")
 
         # --- LEAVE ---
         # Beispiel: LEAVE Alice
@@ -114,9 +114,9 @@ class DiscoveryService:
 
             # Rückmeldung je nach Absender
             if addr[0] == self.local_ip and handle == self.my_handle:
-                print(f"👋 Du ({handle}) hast den Chat verlassen.")
+                print(f"Du ({handle}) hast den Chat verlassen.")
             else:
-                print(f"👋 {handle} hat den Chat verlassen.")
+                print(f"{handle} hat den Chat verlassen.")
 
         # --- KNOWUSERS ---
         # Beispiel: KNOWUSERS Alice 192.168.0.5 5000, Bob 192.168.0.7 5001
@@ -138,11 +138,11 @@ class DiscoveryService:
                         continue  # ignorieren, falls fehlerhaft
 
             if added_list:
-                print("📃 Entdeckte Nutzer:")
+                print("Entdeckte Nutzer:")
                 for h, ip, port in added_list:
                     print(f"- {h} ({ip}:{port})")
             else:
-                print("📃 Keine neuen Nutzer entdeckt (oder bereits bekannt).")
+                print("Keine neuen Nutzer entdeckt (oder bereits bekannt).")
 
 
     def send_known_users(self, target_addr, sock):
@@ -161,14 +161,14 @@ class DiscoveryService:
 
         response = f"KNOWUSERS {userlist}\n"
         sock.sendto(response.encode(), target_addr)
-        print(f"📤 Gesendet an {target_addr}: {response.strip()}")
+        print(f"Gesendet an {target_addr}: {response.strip()}")
 
     def stop(self):
         """
         Beendet die beiden Listener.
         """
         self.running = False
-        print("🛑 Discovery-Service wurde gestoppt.")
+        print("Discovery-Service wurde gestoppt.")
 
     def get_local_ip(self):
         """
