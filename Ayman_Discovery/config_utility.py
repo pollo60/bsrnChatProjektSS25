@@ -2,6 +2,7 @@
 import toml
 import sys
 import os
+import getpass
 
 def config_startup():
     # Bestimme das aktuelle Verzeichnis, in dem sich main.py befindet
@@ -21,39 +22,87 @@ def config_startup():
     return config_path, auto_mode
 
 
+# Pfad zur benutzerspezifischen Konfigurationsdatei definieren
+def get_contacts_path():
+    username = getpass.getuser()
+    contacts_dir = os.path.expanduser("~/.bsrnchat")
+    os.makedirs(contacts_dir, exist_ok=True)
+    return os.path.join(contacts_dir, f"contacts_{username}.toml")
 
 
+def check_for_contact_list(contacts_path):
+    if not os.path.exists(contacts_path):
+        print(f"Kontaktliste nicht gefunden. Erzeuge neue Datei unter: {contacts_path}")
+        with open(contacts_path, "w") as f:
+            f.write("[kontakte]\n")
+    else:
+        try:
+            with open(contacts_path, "r") as f:
+                content = f.read().strip()
+                if not content:
+                    raise ValueError("Datei ist leer.")
+
+                data = toml.loads(content)
+
+                if "kontakte" not in data:
+                    raise ValueError("Fehlender [kontakte]-Abschnitt.")
+        except (toml.TomlDecodeError, ValueError) as e:
+            # print(f"[WARNUNG] Ungültige Kontaktdatei: {e}. Datei wird neu erstellt.")
+            with open(contacts_path, "w") as f:
+                f.write("[kontakte]\n")
+
+   
+def write_contacts(name, contacts_path):
+    try:
+        try:
+            with open(contacts_path, 'r') as f:
+                contacts = toml.load(f)
+        except FileNotFoundError:
+            contacts = {}
+
+        contacts['name'] = name
+
+        with open(contacts_path, 'w') as f:
+            toml.dump(contacts, f)
+
+        print("Kontakte-Datei wurde aktualisiert.")
+
+    except Exception as e:
+        print("Fehler beim Schreiben in die Kontakte-Datei:", e)
 
 
 # Funktion zum Anlegen eines neuen Kontakts
-def kontaktAnlegen(empfaenger, config_path):
+def kontaktAnlegen(empfaenger, contacts_path):
+    check_for_contact_list(contacts_path)
+
+
     try:
         # Öffnen und Einlesen der bestehenden Konfigurationsdatei im TOML-Format
-        with open(config_path, 'r') as f:
-            config = toml.load(f)
+        with open(contacts_path, 'r') as f:
+            contacts = toml.load(f)
     except FileNotFoundError:
         # Falls keine Konfigurationsdatei existiert, wird ein leeres Dictionary verwendet
-        config = {}
+        contacts = {}
 
     name = empfaenger  # Name des neuen Kontakts (wird beim Funktionsaufruf übergeben)
     port = input("Gib die Portnummer ein: ").strip()  # Eingabe der Ziel-Portnummer durch den Benutzer
     ip = input("Gib die IP ein: ").strip()            # Eingabe der Ziel-IP-Adresse durch den Benutzer
 
     # Speichern der Kontaktdaten im Dictionary
-    config[name] = {
+    contacts[name] = {
         'ziel_name': name,     # Name des Empfängers
         'ziel_port': port,     # Zielport für die Kommunikation
         'ziel_ip': ip          # Ziel-IP-Adresse
     }
 
   # Öffnen der Konfigurationsdatei im Schreibmodus und Aktualisieren mit den neuen Kontaktdaten
-    with open(config_path, 'w') as f:
-        toml.dump(config, f)  # Speichern des aktualisierten Dictionarys im TOML-Format
+    with open(contacts_path, 'w') as f:
+        toml.dump(contacts, f)  # Speichern des aktualisierten Dictionarys im TOML-Format
 
     print("Config-Datei wurde aktualisiert.")              # Bestätigung der erfolgreichen Speicherung
-    print(config[name]['ziel_name'])                       # Ausgabe des gespeicherten Kontaktnamens
-    print(config[name]['ziel_port'])                       # Ausgabe der gespeicherten Portnummer
-    print(config[name]['ziel_ip'])  
+    print(contacts[name]['ziel_name'])                       # Ausgabe des gespeicherten Kontaktnamens
+    print(contacts[name]['ziel_port'])                       # Ausgabe der gespeicherten Portnummer
+    print(contacts[name]['ziel_ip'])  
 
 
 
@@ -61,16 +110,18 @@ def kontaktAnlegen(empfaenger, config_path):
 
 
     # Funktion zur Anzeige aller gespeicherten Kontakte
-def kontakteZeigen(config_path):
+def kontakteZeigen(contacts_path):
+    check_for_contact_list(contacts_path)
+
     try:
         # Öffnen und Einlesen der Konfigurationsdatei
-        with open(config_path, 'r') as f:
-            config = toml.load(f)  # Laden des Inhalts im TOML-Format
-            print("Inhalt der Konfigurationsdatei:\n")
-            print(toml.dumps(config))  # Ausgabe des kompletten Inhalts der Datei
+        with open(contacts_path, 'r') as f:
+            contacts = toml.load(f)  # Laden des Inhalts im TOML-Format
+            print("Inhalt der Kontaktliste:\n")
+            print(toml.dumps(contacts))  # Ausgabe des kompletten Inhalts der Datei
 
             #  Konfiguration (Login etc.) und Kontakte
             # in getrennten Dateien speichern, um Übersicht zu verbessern
     except FileNotFoundError:
         # Falls Datei nicht existiert Fehlermeldung anzeigen
-        print(f"Datei '{config_path}' nicht gefunden.")
+        print(f"Datei '{contacts_path}' nicht gefunden.")

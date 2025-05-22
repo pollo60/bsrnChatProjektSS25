@@ -12,28 +12,28 @@ def send_udp_broadcast(message, whoisport):
 
 
 # Funktion zum Senden einer Nachricht an einen spezifischen Empfänger
-def MSG(empfaenger, config_path):
+def MSG(empfaenger, contacts_path):
 
     # 1. Konfiguration laden
     try:
-        with open(config_path, 'r') as f:
-            config = toml.load(f)
+        with open(contacts_path, 'r') as f:
+            contacts = toml.load(f)
     except FileNotFoundError:
         print("Konfigurationsdatei nicht gefunden.")
         return
 
     # suche nach empfaenger in config
     key = None
-    for k in config:
+    for k in contacts:
         if k.lower() == empfaenger.strip().lower():
             key = k
             break
     if not key:
-        print(f"Empfänger '{empfaenger}' nicht gefunden in {list(config.keys())}")
+        print(f"Empfänger '{empfaenger}' nicht gefunden in {list(contacts.keys())}")
         return
 
     # 3. IP und Port sauber auslesen und strippen
-    data = config[key]
+    data = contacts[key]
     ZIEL_IP   = data['ziel_ip'].strip()
     ZIEL_PORT = int(str(data['ziel_port']).strip())
 
