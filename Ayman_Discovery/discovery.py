@@ -44,23 +44,23 @@ class DiscoveryService:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(('', self.whoisport))
 
-            print(f"🌐 Discovery-Service läuft. Warte auf Nachrichten auf Port {self.whoisport}...")
+            print(f"Discovery-Service läuft. Warte auf Nachrichten auf Port {self.whoisport}...")
 
             while self.running:
                 try:
                     # Empfang einer Nachricht
                     data, addr = sock.recvfrom(BUFFER_SIZE)
                     message = data.decode().strip()
-                    print(f"\n📥 Neue Nachricht von {addr}: {message}")
+                    print(f"\nNeue Nachricht von {addr}: {message}")
                     self.handle_message(message, addr, sock)
                 
                 except ConnectionResetError:
                     # Fehlermeldung speziell für die WinError10054: Socket wurde auf EMpfängerseite unerwartet geschlossen
-                    print("⚠️ Verbindung wurde vom Empfänger unerwartet getrennt (ignoriert).")
+                    print("Verbindung wurde vom Empfänger unerwartet getrennt (ignoriert).")
 
                 except Exception as e:
-                    # Andere erwartete Fehler
-                    print(f"⚠️ Fehler beim Empfangen: {e}")
+                    # Anderweitige Fehler
+                    print(f"Fehler beim Empfangen: {e}")
 
     def handle_message(self, message, addr, sock):
         """
@@ -72,7 +72,7 @@ class DiscoveryService:
 
         command = parts[0].upper()
 
-        # 👋 Nutzer meldet sich im Netzwerk an
+        # Nutzer meldet sich im Netzwerk an
         if command == "JOIN" and len(parts) == 3:
             handle = parts[1]
             port = int(parts[2])
@@ -80,28 +80,28 @@ class DiscoveryService:
                 self.clients[handle] = (addr[0], port)
             
             if addr[0] == self.local_ip:
-                print(f"✅ Du ({handle}) hast erfolgreich dem Chat beigetreten.")
+                print(f"Du ({handle}) hast erfolgreich dem Chat beigetreten.")
             else:
-                print(f"✅ {handle} ist jetzt online unter {addr[0]}:{port}")
+                print(f"{handle} ist jetzt online unter {addr[0]}:{port}")
 
         # 📡 Nutzer fragt nach bekannten Teilnehmern im Netzwerk
         elif command == "WHO":
             self.send_known_users(addr, sock)
 
-        # 👋 Nutzer verlässt das Netzwerk
+        #  Nutzer verlässt das Netzwerk
         elif command == "LEAVE" and len(parts) == 2:
             handle = parts[1]
             with self.lock:
                 self.clients.pop(handle, None)
             
             if addr[0] == self.local_ip:
-                print(f"👋 Du ({handle}) hast den Chat verlassen.")
+                print(f"Du ({handle}) hast den Chat verlassen.")
             else:
-                print(f"👋 {handle} hat den Chat verlassen.")
+                print(f"{handle} hat den Chat verlassen.")
 
-        # ❓ Unbekannter Befehl
+        # Unbekannter Befehl Fehlermeldung
         else:
-            print(f"❌ Unbekannter Befehl oder ungültige Syntax: {message}")
+            print(f"Unbekannter Befehl oder ungültige Syntax: {message}")
 
     def send_known_users(self, target_addr, sock):
         """
@@ -119,14 +119,14 @@ class DiscoveryService:
         response = f"KNOWUSERS {userlist}\n"
         sock.sendto(response.encode(), target_addr)
 
-        print(f"📤 Gesendet an {target_addr}: {response.strip()}")
+        print(f"Gesendet an {target_addr}: {response.strip()}")
 
     def stop(self):
         """
         Beendet den Discovery-Dienst.
         """
         self.running = False
-        print("🛑 Discovery-Service wurde gestoppt.")
+        print("Discovery-Service wurde gestoppt.")
 
     def get_local_ip(self):
         """
