@@ -9,6 +9,8 @@ if __name__ == "__main__":
 
     config_path, auto_mode = config_startup()  # Pfad zur Konfigurationsdatei & Automodus ermitteln
 
+    contacts_path = get_contacts_path
+
     # TOML-Konfigurationsdatei mit `with open(...)` laden
     try:
         with open(config_path, 'r') as f:
