@@ -20,14 +20,17 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
         return
 
     # Manueller Modus: Zeige Menü mit Optionen an
-    print("Discovery Test CLI:") 
+    print("\nDiscovery Test CLI:") 
+    print("-----------------------------------")
+    print("Waehle eine der folgenden Optionen|")
+    print("-----------------------------------")
     print("1 - JOIN") # Netzwerkbeitritt
     print("2 - LEAVE") # Netzwerk verlassen
     print("3 - WHO") # Liste der Teilnehmer abrufen
     print("4 - Kontakt anlegen") # Neuen Kontakt zur Kontaktliste hinzufügen
-    print("5 - MSG")  # Nachricht an Kontakt senden
-    print("6 - KOntakte anzeigen") # Alle gespeicherten Kontakte anzeigen
-    print("q - Quit")  # CLI beenden
+    print("5 - Nachricht senden")  # Nachricht an Kontakt senden
+    print("6 - Kontakte anzeigen") # Alle gespeicherten Kontakte anzeigen
+    print("q - Programm beenden")  # CLI beenden
 
     while True:
         choice = input("Eingabe: ").strip()
@@ -47,7 +50,7 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
             # Neuen Kontakt anlegen: Frage nach Name und leite weiter
             check_for_contact_list(contacts_path)
 
-            empfaenger = input("Name des Kontakts:")
+            empfaenger = input("Name des Kontakts: ")
 
             kontaktAnlegen(empfaenger, config_path)
             # Nachricht senden (interaktive Funktion in nachrichtSenden)
