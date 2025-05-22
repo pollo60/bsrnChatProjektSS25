@@ -91,8 +91,8 @@ def kontakteZeigen():
 def datenAufnehmen():
     ip, ipnetz = ermittle_ip_und_broadcast()
     print(f"[DEBUG] Lokale IP = {ip}, Broadcast = {ipnetz}")
-    name = input("Gib Deinen Namen ein: ").strip().lower()
-    port = input("Gib Deine Portnummer ein: ").strip()
+    name = input("Gib den Namen ein: ").strip().lower()
+    port = input("Gib die Portnummer ein: ").strip()
     hallo = input("Gib eine automatische Willkommensnachricht ein: ").strip()
     return {
         'name': name,
