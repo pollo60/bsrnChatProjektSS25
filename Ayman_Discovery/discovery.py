@@ -94,7 +94,7 @@ class DiscoveryService:
 
         # --- WHO ---
         # Beispiel: WHO Alice
-        elif command == "WHO":
+        elif command == "WHO":  #Auch hier den Command abändern?
             if len(parts) == 2:
                 who_sender_handle = parts[1]
                 print(f"WHO-Anfrage empfangen von {who_sender_handle} ({addr[0]})")
@@ -108,7 +108,7 @@ class DiscoveryService:
 
         # --- LEAVE ---
         # Beispiel: LEAVE Alice
-        elif command == "LEAVE" and len(parts) == 2:
+        elif command == "LEAVE" and len(parts) == 2: #Auch hier command leave zu Netwerk verlassen?
             handle = parts[1]
             with self.lock:
                 self.clients.pop(handle, None)
