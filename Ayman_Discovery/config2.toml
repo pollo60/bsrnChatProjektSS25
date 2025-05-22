@@ -3,3 +3,13 @@ port = 5000
 whoisport = 4000
 autoreply = "Ich bin gerade nicht da."
 imagepath = "./images"
+
+[Altay]
+ziel_name = "Altay"
+ziel_port = "5003"
+ziel_ip = "172.20.10.10"
+
+[""]
+ziel_name = ""
+ziel_port = ""
+ziel_ip = ""
