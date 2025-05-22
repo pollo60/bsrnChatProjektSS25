@@ -3,11 +3,13 @@ import os
 import toml
 from discovery import DiscoveryService
 from ui import start_cli
-from config_utility import config_startup
+from config_utility import config_startup, get_contacts_path
 
 if __name__ == "__main__":
 
     config_path, auto_mode = config_startup()
+
+    contacts_path = get_contacts_path()
 
     # ✅ TOML-Konfigurationsdatei mit `with open(...)` laden
     try:
@@ -30,7 +32,7 @@ if __name__ == "__main__":
 
     try:
 #############################################################
-        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path=config_path)
+        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path=config_path, contacts_path=contacts_path)
     except KeyboardInterrupt:
         print("\n[MAIN] Abbruch durch Benutzer")
     finally:

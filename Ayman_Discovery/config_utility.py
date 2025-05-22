@@ -2,6 +2,7 @@
 import toml
 import sys
 import os
+import getpass
 
 def config_startup():
     # Bestimme das aktuelle Verzeichnis, in dem sich main.py befindet
@@ -21,7 +22,12 @@ def config_startup():
     return config_path, auto_mode
 
 
-
+# Pfad zur benutzerspezifischen Konfigurationsdatei definieren
+def get_contacts_path():
+    username = getpass.getuser()
+    contacts_dir = os.path.expanduser("~/.bsrnchat")
+    os.makedirs(contacts_dir, exist_ok=True)
+    return os.path.join(contacts_dir, f"contacts_{username}.toml")
 
 
 

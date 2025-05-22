@@ -3,7 +3,7 @@ from config_utility import kontaktAnlegen, kontakteZeigen
 import time
 
 
-def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path=""):
+def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="", contacts_path=""):
     """
     Startet das CLI für den Nutzer.
     Im Automodus (auto=True) wird automatisch JOIN und WHO gesendet.
@@ -38,11 +38,11 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="")
             send_udp_broadcast(f"WHO {handle}", whoisport)
         elif choice == "4":
             empfaenger = input("Name des Kontakts:")
-            kontaktAnlegen(empfaenger, config_path)
+            kontaktAnlegen(empfaenger, contacts_path)
         elif choice == "5":
-            nachrichtSenden(config_path)
+            nachrichtSenden(contacts_path)
         elif choice == "6":
-            kontakteZeigen(config_path)
+            kontakteZeigen(contacts_path)
         elif choice.lower() == "q":
             break
         else:
