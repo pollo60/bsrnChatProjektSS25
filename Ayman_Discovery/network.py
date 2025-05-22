@@ -1,13 +1,13 @@
 import socket
 import toml
 
-def send_udp_broadcast(message, port):
+def send_udp_broadcast(message, whoisport):
     """
     Sendet eine UDP-Broadcast-Nachricht.
     """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.sendto(message.encode(), ('255.255.255.255', port))
+        sock.sendto(message.encode(), ('255.255.255.255', whoisport))
         print(f"[Network] Broadcast gesendet: {message}")
 
 
@@ -38,7 +38,7 @@ def MSG(empfaenger, config_path):
     ZIEL_PORT = int(str(data['ziel_port']).strip())
 
     # 4. Nachricht vom Benutzer abfragen
-    nachricht = input("Nachricht: ").strip()
+    message = input("Nachricht: ").strip()
 
     # 5. Debug-Ausgabe
     print(f"[DEBUG] Sende Nachricht an {key} -> IP={ZIEL_IP!r}, Port={ZIEL_PORT}")
@@ -46,7 +46,7 @@ def MSG(empfaenger, config_path):
     # 6. Nachricht per UDP senden
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        sock.sendto(nachricht.encode("utf-8"), (ZIEL_IP, ZIEL_PORT))
+        sock.sendto(message.encode("utf-8"), (ZIEL_IP, ZIEL_PORT))
         print(f"Nachricht an {ZIEL_IP}:{ZIEL_PORT} gesendet.")
     except Exception as e:
         print("Send-Error:", e)
