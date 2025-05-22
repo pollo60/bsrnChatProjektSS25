@@ -26,6 +26,9 @@ class DiscoveryService:
         # Verhindert gleichzeitigen Zugriff auf self.clients durch mehrere Threads
         self.lock = threading.Lock()
 
+        # Eigene lokale IP-Adresse ermitteln
+        self.local_ip = self.get_local_ip()
+
     def start(self):
         """
         Startet den Discovery-Dienst in einem separaten Thread.
@@ -41,7 +44,7 @@ class DiscoveryService:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(('', self.whoisport))
 
-            print("🌐 Discovery-Service läuft. Warte auf Nachrichten auf Port {self.whoisport}...")
+            print(f"🌐 Discovery-Service läuft. Warte auf Nachrichten auf Port {self.whoisport}...")
 
             while self.running:
                 try:
@@ -52,7 +55,7 @@ class DiscoveryService:
                     self.handle_message(message, addr, sock)
                 
                 except ConnectionResetError:
-                    # Fehlermeldung speziell für die WinError10054: Socket wurde auf EMpfängerseite unerwatet geschlossen
+                    # Fehlermeldung speziell für die WinError10054: Socket wurde auf EMpfängerseite unerwartet geschlossen
                     print("⚠️ Verbindung wurde vom Empfänger unerwartet getrennt (ignoriert).")
 
                 except Exception as e:
@@ -75,7 +78,11 @@ class DiscoveryService:
             port = int(parts[2])
             with self.lock:
                 self.clients[handle] = (addr[0], port)
-            print(f"✅ {handle} ist jetzt online unter {addr[0]}:{port}")
+            
+            if addr[0] == self.local_ip:
+                print(f"✅ Du ({handle}) hast erfolgreich dem Chat beigetreten.")
+            else:
+                print(f"✅ {handle} ist jetzt online unter {addr[0]}:{port}")
 
         # 📡 Nutzer fragt nach bekannten Teilnehmern im Netzwerk
         elif command == "WHO":
@@ -86,7 +93,11 @@ class DiscoveryService:
             handle = parts[1]
             with self.lock:
                 self.clients.pop(handle, None)
-            print(f"👋 {handle} hat das Netzwerk verlassen.")
+            
+            if addr[0] == self.local_ip:
+                print(f"👋 Du ({handle}) hast den Chat verlassen.")
+            else:
+                print(f"👋 {handle} hat den Chat verlassen.")
 
         # ❓ Unbekannter Befehl
         else:
@@ -116,3 +127,14 @@ class DiscoveryService:
         """
         self.running = False
         print("🛑 Discovery-Service wurde gestoppt.")
+
+    def get_local_ip(self):
+        """
+        Ermittelt die lokale IP-Adresse des aktuellen Rechners.
+        """
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect(("8.8.8.8", 80))
+                return s.getsockname()[0]
+        except:
+            return "127.0.0.1"
