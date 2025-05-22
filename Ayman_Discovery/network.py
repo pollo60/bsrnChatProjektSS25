@@ -8,7 +8,7 @@ def send_udp_broadcast(message, whoisport):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(message.encode(), ('255.255.255.255', whoisport))
-        print(f"[Network] Broadcast gesendet: {message}")
+        print(f"[Network] Broadcast gesendet: {message}") #Kann man das weglassen?
 
 
 # Funktion zum Senden einer Nachricht an einen spezifischen Empfänger

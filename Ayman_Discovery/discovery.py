@@ -75,9 +75,10 @@ class DiscoveryService:
 
         command = parts[0].upper()
 
-        # --- JOIN ---
+        # --- JOIN --- bzw Netzwerk beitreten???
         # Beispiel: JOIN Alice 5000
-        if command == "JOIN" and len(parts) == 3:
+        if command == "JOIN" and len(parts) == 3: #Hier bei IF abfrage if cammand = Join oder eher = Netzwerk beitreten???
+            print("hat geklappt") #Was passiert hier überhaupt
             handle = parts[1]
             port = int(parts[2])
 
