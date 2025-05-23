@@ -21,9 +21,9 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
 
     # Manueller Modus: Zeige Menü mit Optionen an
     #print("\nDiscovery Test CLI:") 
-    print("-----------------------------------")
+    print("--------------------------------------")
     print("Waehle eine der folgenden Optionen 👀|")
-    print("-----------------------------------")
+    print("--------------------------------------")
     print("1 - Netzwerk beitreten 🌐") # Netzwerkbeitritt
     print("2 - Netzwerk verlassen ❌") # Netzwerk verlassen
     print("3 - WHO- Anfrage senden 🕵️") # Liste der Teilnehmer abrufen
