@@ -13,3 +13,8 @@ ziel_ip = "172.20.10.10:1"
 ziel_name = "Altay"
 ziel_port = "5003"
 ziel_ip = "172.20.10.10"
+
+[4]
+ziel_name = "4"
+ziel_port = "234"
+ziel_ip = "234"
