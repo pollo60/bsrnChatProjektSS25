@@ -18,3 +18,23 @@ ziel_ip = "172.20.10.10"
 ziel_name = "4"
 ziel_port = "234"
 ziel_ip = "234"
+
+[tester1]
+ziel_name = "tester1"
+ziel_port = "4002"
+ziel_ip = "172.20.10.4"
+
+[tester2]
+ziel_name = "tester2"
+ziel_port = "4003"
+ziel_ip = "172.20.10.5"
+
+[pytest]
+ziel_name = "pytest"
+ziel_port = "4006"
+ziel_ip = "172.20.10.6"
+
+[test]
+ziel_name = "test"
+ziel_port = "4004"
+ziel_ip = "172.20.10.4"

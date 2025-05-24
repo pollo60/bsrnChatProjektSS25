@@ -54,20 +54,20 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
 
             kontaktAnlegen(empfaenger, config_path)
             # Nachricht senden (interaktive Funktion in nachrichtSenden)
-        elif choice == "5":
 
-            nachrichtSenden(config_path)
+        elif choice == "5":
+            nachrichtSenden(config_path) #Achtung oder dieser Parameter: contacts_path
             # Zeige alle gespeicherten Kontakte an
-        elif choice == "6":
-
-            kontakteZeigen(config_path)
-            # Beende die CLI-Schleife
-            kontaktAnlegen(empfaenger, contacts_path)
-        elif choice == "5":
-            nachrichtSenden(contacts_path)
+        
+        #elif choice == "6":
+         #   kontakteZeigen(config_path) 
+        
+        #elif choice == "5":
+         #   nachrichtSenden(contacts_path)
+        
         elif choice == "6":
             check_for_contact_list(contacts_path)
-            kontakteZeigen(contacts_path)
+            kontakteZeigen(config_path)
 
         elif choice.lower() == "q":
 
