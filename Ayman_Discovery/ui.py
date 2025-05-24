@@ -49,21 +49,13 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
         elif choice == "4":
             # Neuen Kontakt anlegen: Frage nach Name und leite weiter
             check_for_contact_list(contacts_path)
-
             empfaenger = input("Name des Kontakts🆕:  ")
-
             kontaktAnlegen(empfaenger, config_path)
             # Nachricht senden (interaktive Funktion in nachrichtSenden)
 
         elif choice == "5":
             nachrichtSenden(config_path) #Achtung oder dieser Parameter: contacts_path
             # Zeige alle gespeicherten Kontakte an
-        
-        #elif choice == "6":
-         #   kontakteZeigen(config_path) 
-        
-        #elif choice == "5":
-         #   nachrichtSenden(contacts_path)
         
         elif choice == "6":
             check_for_contact_list(contacts_path)
