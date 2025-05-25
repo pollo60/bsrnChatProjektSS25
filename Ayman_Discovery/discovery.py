@@ -54,9 +54,14 @@ class DiscoveryService:
                     # Warte auf eingehende Nachricht
                     data, addr = sock.recvfrom(BUFFER_SIZE)
                     message = data.decode().strip()
+                    # debug nachricht: print(f"DEBUG: Nachricht von {addr[0]}, local_ip={self.local_ip}, message={message}")
 
-                    is_own_join = message.strip() == f"JOIN {self.my_handle} {self.my_port}"
-                    is_own_custom = message.strip() == f"Netzwerk beigetreten als {self.my_handle} {self.my_port}"
+                    is_own_join = (
+                        message == f"JOIN {self.my_handle} {self.my_port}" and addr[0] == self.local_ip
+                    )
+                    is_own_custom = (
+                        message == f"Netzwerk beigetreten als {self.my_handle} {self.my_port}" and addr[0] == self.local_ip
+                    )
 
 
                     if not (is_own_join or is_own_custom):
@@ -75,11 +80,13 @@ class DiscoveryService:
         Zentrale Funktion zum Verarbeiten von eingehenden SLCP-Nachrichten.
         Erkennt JOIN, WHO, LEAVE, KNOWUSERS.
         """
-        parts = message.split()
-        if addr[0] == self.local_ip and message.startswith(f"JOIN {self.my_handle}"):
+        if message.strip() == f"JOIN {self.my_handle} {self.my_port}" or \
+           message.strip() == f"Netzwerk beigetreten als {self.my_handle} {self.my_port}":
             return
+
+        parts = message.split()
         if not parts:
-            return  # leere Nachricht → ignorieren
+                return  # leere Nachricht → ignorieren
 
         command = parts[0].upper()
 
