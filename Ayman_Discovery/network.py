@@ -5,9 +5,9 @@ def send_udp_broadcast(message, whoisport):
     """
     Sendet eine UDP-Broadcast-Nachricht.
     """
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.sendto(message.encode(), ('255.255.255.255', whoisport))
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock: #socket.AF_INET=IPv4 adr; socket.SOCK_DGRAM= UDP Protokoll; with: Socket wird autom. wieder geschlossen
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) #broadcast funktion für Socket aktivieren
+        sock.sendto(message.encode(), ('255.255.255.255', whoisport)) #Senden an alle clients, die auf diesem Port lauschen; geht an alle Rechner im lokalen netz
         print(f"[Network] Broadcast gesendet: {message}") #Kann man das weglassen?
 
 

@@ -16,7 +16,7 @@ if __name__ == "__main__":
         with open(config_path, 'r') as f:
             config = toml.load(f) # Konfigurationsdaten aus Datei lesen
     except Exception as e:
-        print(f"Fehler beim Laden der Konfigurationsdatei: {e}") # Fehlermeldung ausgeben
+        print(f"Fehler beim Laden der Konfigurationsdatei: {e} ⚠️") # Fehlermeldung ausgeben
         sys.exit(1) # Programm beenden
 
     # Werte aus der geladenen Konfiguration entnehmen
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         # Start der Benutzeroberfläche (CLI)
         start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path = config_path, contacts_path=contacts_path)
     except KeyboardInterrupt:
-        print("\n[MAIN] Abbruch durch Benutzer") # Nachricht bei Abbruch durch Strg+C
+        print("\nBenutzer hat abgebrochen🛑") # Nachricht bei Abbruch durch Strg+C, wiird von der Main ausgeführt
     finally:
         discovery.stop()
-        print("[MAIN] Discovery-Dienst gestoppt.") # Bestätigung der Beendigung
+        print("Discovery-Dienst gestoppt👋") # Bestätigung der Beendigung, wird von der Main ausgeführt

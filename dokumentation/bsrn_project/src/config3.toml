@@ -1,8 +1,21 @@
+## \file config.toml
+## \brief Konfiguration für den Nutzer Altay.
+
+handle: "Altay" –> Name dieses Clients  
+port: 5003 – >Port für eingehende Nachrichten  
+whoisport: 4000 – >Port für WHOIS-Anfragen  
+autoreply: "Ich bin gerade nicht da." –> Automatische Antwort bei Abwesenheit  
+imagepath: "./images" –> Pfad zum Bildordner 
+
+
+
 handle = "Altay"
 port = 5003
 whoisport = 4000
 autoreply = "Ich bin gerade nicht da."
 imagepath = "./images"
+
+###Zielnutzer: 
 
 [ayman]
 ziel_name = "ayman"

@@ -1,4 +1,9 @@
-from network import send_udp_broadcast, nachrichtSenden
+## \file ui.py
+## \brief Command Line Interface (CLI) zur Steuerung der Netzwerkinteraktionen.
+##
+## Dieses Modul stellt dem Benutzer eine einfache Textoberfläche zur Verfügung,
+## um Nachichten zu verschicken, zu empfangen und Kontakte zu erhalten.
+
 from config_utility import kontaktAnlegen, kontakteZeigen
 import time
 from config_utility import check_for_contact_list

@@ -4,6 +4,15 @@ import toml         # Um Konfigurationsdaten aus der Datei config.toml zu lesen
 
 BUFFER_SIZE = 1024  # Max. Größe für empfangene Nachrichten (UDP hat eine Begrenzung)
 
+## \class DiscoveryService
+#  \brief Service für Discovery und Verwaltung bekannter Clients im lokalen Netzwerk
+#
+#  Verantwortlich für fast alles,-:
+#   - Broadcasts (JOIN, WHO, LEAVE, KNOWUSERS)
+#   - Verwaltung der bekannten Clients (handle, IP, Port)
+#   - Senden von Antworten auf Discovery-Anfragen
+
+
 class DiscoveryService:
     def __init__(self, config_path="config.toml"):
         # Hier speichern wir bekannte Clients: {handle: (ip, port)}
@@ -30,7 +39,9 @@ class DiscoveryService:
         # Eigene IP-Adresse im Netzwerk ermitteln
         self.local_ip = self.get_local_ip()
 
-    def start(self):
+## \brief Startet zwei Threads zum Lauschen auf den Ports (whoisport & eigener port)
+
+def start(self):
         """
         Startet zwei parallele Threads:
         - einen für den Broadcast-Port (whoisport)
@@ -39,7 +50,12 @@ class DiscoveryService:
         threading.Thread(target=self.listen_on_port, args=("WHOIS-Port", self.whoisport), daemon=True).start()
         threading.Thread(target=self.listen_on_port, args=("Eigen-Port", self.my_port), daemon=True).start()
 
-    def listen_on_port(self, port_name, port_value):
+
+ ## \brief Lauscht auf eingehende Nachrichten auf einem bestimmten Port
+    #  \param port_name Beschreibender Name des Ports für Ausgaben
+    #  \param port_value Portnummer
+
+def listen_on_port(self, port_name, port_value):
         """
         Lauscht auf eingehende Nachrichten auf einem bestimmten Port.
         Wird in einem separaten Thread für jeden Port gestartet.
@@ -52,7 +68,7 @@ class DiscoveryService:
             while self.running:
                 try:
                     # Warte auf eingehende Nachricht
-                    data, addr = sock.recvfrom(BUFFER_SIZE)
+                    data, addr = sock.recvfrom(BUFFER_SIZE) # Nachicht empfangen
                     message = data.decode().strip()
                     print(f"\n📥 Neue Nachricht auf {port_name} von {addr}: {message}")
 
@@ -64,7 +80,12 @@ class DiscoveryService:
                 except Exception as e:
                     print(f"⚠️ Fehler beim Lauschen auf {port_name}: {e}")
 
-    def handle_message(self, message, addr, sock):
+## \brief Verarbeitet eingehende Nachrichten und reagiert auf JOIN, WHO, LEAVE und KNOWUSERS
+    #  \param message Empfangene Nachricht als String
+    #  \param addr Adresse (IP, Port) des Senders
+    #  \param sock Socket zum Antworten (UDP)
+
+def handle_message(self, message, addr, sock):
         """
         Zentrale Funktion zum Verarbeiten von eingehenden SLCP-Nachrichten.
         Erkennt JOIN, WHO, LEAVE, KNOWUSERS.
@@ -144,6 +165,9 @@ class DiscoveryService:
             else:
                 print("📃 Keine neuen Nutzer entdeckt (oder bereits bekannt).")
 
+## \brief Sendet eine KNOWUSERS-Nachricht mit allen bekannten Clients an Zieladresse
+    #  \param target_addr des Empfängers
+    #                \param sock Socket zum Senden der nachricht
 
     def send_known_users(self, target_addr, sock):
         """
@@ -153,7 +177,7 @@ class DiscoveryService:
         with self.lock:
             if not self.clients:
                 userlist = "Niemand online"
-            else:
+            else:           # Benutzerliste als string zusammenbauen
                 userlist = ", ".join([
                     f"{handle} {ip} {port}"
                     for handle, (ip, port) in self.clients.items()
@@ -163,6 +187,8 @@ class DiscoveryService:
         sock.sendto(response.encode(), target_addr)
         print(f"📤 Gesendet an {target_addr}: {response.strip()}")
 
+
+## \brief Stoppt die such-schleifen und beendet den Service
     def stop(self):
         """
         Beendet die beiden Listener.
@@ -170,7 +196,11 @@ class DiscoveryService:
         self.running = False
         print("🛑 Discovery-Service wurde gestoppt.")
 
-    def get_local_ip(self):
+## \brief Ermittelt die lokale IP-Adresse des Rechners
+    #  \return IP-Adresse als String 
+    #  Nutzt eine UDP-Verbindung zu Google DNS, um die lokale IP zu ermitteln
+    
+ def get_local_ip(self):
         """
         Ermittelt die lokale IP-Adresse des Rechners,
         indem eine "Fake-Verbindung" zu einer externen IP hergestellt wird.
