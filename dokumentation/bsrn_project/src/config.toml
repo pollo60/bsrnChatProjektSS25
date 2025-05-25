@@ -1,3 +1,20 @@
+## \file config.toml
+## \brief Basis-Konfiguration für den Nachrichten-Client.
+
+- handle: Benutzername dieses Clients  
+- port: Empfangsport für Nachrichten  
+- whoisport: Port für WHOIS-Abfragen  
+- autoreply: Automatische Antwort bei Abwesenheit  
+- imagepath: Pfad zu Bilddateien  
+
+### Zielnutzer
+
+- altay und Altay: Zielinformationen  
+  - ziel_name: Name des Zielnutzers  
+  - ziel_port: Ziel-Port  
+  - ziel_ip: IP-Adresse 
+
+
 handle = "Tom"
 port = 5001
 whoisport = 4000
