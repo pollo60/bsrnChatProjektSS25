@@ -1,3 +1,19 @@
+## \file config.toml
+## \brief Konfiguration für den Nutzer Ayman.
+
+- handle: "Ayman" -> Name dieses Clients  
+- port: 5000 –> Empfangsport für Nachrichten  
+- whoisport: 4000 –> Port für WHOIS-Anfragen  
+- autorepli: "Ich bin gerade nicht da." –> Nachricht bei Abwesenheit  
+- imagepath: "./images" –> Pfad zu Bilddateien, die gesendet werden können  
+
+
+
+
+
+
+
+
 handle = "Ayman"
 port = 5000
 whoisport = 4000
