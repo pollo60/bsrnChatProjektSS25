@@ -54,7 +54,13 @@ class DiscoveryService:
                     # Warte auf eingehende Nachricht
                     data, addr = sock.recvfrom(BUFFER_SIZE)
                     message = data.decode().strip()
-                    print(f"\nNeue Nachricht auf {port_name} von {addr}: {message}")
+
+                    is_own_join = message.strip() == f"JOIN {self.my_handle} {self.my_port}"
+                    is_own_custom = message.strip() == f"Netzwerk beigetreten als {self.my_handle} {self.my_port}"
+
+
+                    if not (is_own_join or is_own_custom):
+                        print(f"\n📥 Neue Nachricht auf {port_name} von {addr}: {message}")
 
                     # Nachricht verarbeiten
                     self.handle_message(message, addr, sock)
@@ -70,6 +76,8 @@ class DiscoveryService:
         Erkennt JOIN, WHO, LEAVE, KNOWUSERS.
         """
         parts = message.split()
+        if addr[0] == self.local_ip and message.startswith(f"JOIN {self.my_handle}"):
+            return
         if not parts:
             return  # leere Nachricht → ignorieren
 
@@ -77,8 +85,7 @@ class DiscoveryService:
 
         # --- JOIN --- bzw Netzwerk beitreten???
         # Beispiel: JOIN Alice 5000
-        if command == "JOIN" and len(parts) == 3: #Hier bei IF abfrage if cammand = Join oder eher = Netzwerk beitreten???
-            print("hat geklappt") #Was passiert hier überhaupt
+        if command == "JOIN" and len(parts) == 3: # Nicht abändern, denn dieser Befehl wird benötigt damit SLCP es richtig erkennt
             handle = parts[1]
             port = int(parts[2])
 
