@@ -1,3 +1,8 @@
+
+## \file main.copy.py
+## \brief Hauptprogramm zum Starten des Chat-Clients und Discovery-dienstes
+## Lädt die Konfiguration, startet den discovery-Service und die Benutzeroberfläche 
+
 import sys # Importieren des sys-Moduls für Systemfunktionen
 import os # Importieren des os-Moduls zur Arbeit mit Pfaden
 import toml  # Importieren des toml-Moduls zum Lesen/Schreiben von TOML-Dateien
@@ -7,7 +12,8 @@ from config_utility import config_startup, get_contacts_path # Importieren der K
 
 if __name__ == "__main__":
 
-    config_path, auto_mode = config_startup()  # Pfad zur Konfigurationsdatei & Automodus ermitteln
+    ## Hauptstartpunkt des Programms.
+ config_path, auto_mode = config_startup()  # Pfad zur Konfigurationsdatei & Automodus ermitteln
 
     contacts_path = get_contacts_path()
 
