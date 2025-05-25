@@ -1,9 +1,16 @@
-import socket
-import toml
+
+
+## \file network.py
+## \brief Funktionen für Netzwerkkommunikation: UDP-Broadcast und nachrichten
+## Enthält Methoden zum Senden von Broadcasts und Nachrichten
+## basierend auf TOML datei
+
+import socket   ## Socket für Netzwerkkommunikation
+import toml   ## TOML zum Laden der Konfigurationsdateien
 
 def send_udp_broadcast(message, whoisport):
     """
-    Sendet eine UDP-Broadcast-Nachricht.
+    Sendet eine UDP-Broadcast-Nachricht als String.
     """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -13,8 +20,10 @@ def send_udp_broadcast(message, whoisport):
 
 # Funktion zum Senden einer Nachricht an einen spezifischen Empfänger
 def MSG(empfaenger, contacts_path):
-
-    # 1. Konfiguration laden
+ """
+    \brief sendet eine UDP-Nachricht an einen bestimmten Empfänger aus der Kontaktliste.
+    """
+ # 1. Konfiguration laden
     try:
         with open(contacts_path, 'r') as f:
             contacts = toml.load(f)
@@ -57,6 +66,12 @@ def MSG(empfaenger, contacts_path):
 
 # Nachricht an bestimmten Empfänger senden
 def nachrichtSenden(config_path):
+
+""" 
+\brief Hilfsfunktion zum Starten des Sendevorgangs einer Nachricht
+fragt empfänger ab und zeigt MSG funktion auf
+"""
+    
     empfaenger = input("Empfaenger: ")
     MSG(empfaenger, config_path)
 
