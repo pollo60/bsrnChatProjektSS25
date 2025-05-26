@@ -1,3 +1,8 @@
+
+## \file main.copy.py
+## \brief Hauptprogramm zum Starten des Chat-Clients und Discovery-dienstes
+## Lädt die Konfiguration, startet den discovery-Service und die Benutzeroberfläche 
+
 import sys # Importieren des sys-Moduls für Systemfunktionen
 import os # Importieren des os-Moduls zur Arbeit mit Pfaden
 import toml  # Importieren des toml-Moduls zum Lesen/Schreiben von TOML-Dateien
@@ -7,7 +12,8 @@ from config_utility import config_startup, get_contacts_path # Importieren der K
 
 if __name__ == "__main__":
 
-    config_path, auto_mode = config_startup()  # Pfad zur Konfigurationsdatei & Automodus ermitteln
+    ## Hauptstartpunkt des Programms.
+ config_path, auto_mode = config_startup()  # Pfad zur Konfigurationsdatei & Automodus ermitteln
 
     contacts_path = get_contacts_path()
 
@@ -16,7 +22,7 @@ if __name__ == "__main__":
         with open(config_path, 'r') as f:
             config = toml.load(f) # Konfigurationsdaten aus Datei lesen
     except Exception as e:
-        print(f"Fehler beim Laden der Konfigurationsdatei: {e} ⚠️") # Fehlermeldung ausgeben
+        print(f"Fehler beim Laden der Konfigurationsdatei: {e}") # Fehlermeldung ausgeben
         sys.exit(1) # Programm beenden
 
     # Werte aus der geladenen Konfiguration entnehmen
@@ -24,7 +30,7 @@ if __name__ == "__main__":
     port = config.get("port", 5000) # Port für den Client
     whoisport = config.get("whoisport", 54321) # WHO-Port für Discovery-Kommunikation
     # Falls ein Wert fehlt, wird ein Standartwert verwendet
-    #print(f"[MAIN] Starte Client '{handle}' auf Port {port} mit WHO-Port {whoisport} (auto={auto_mode})") #Das vielleicht nicht printen? Oder gibt das ohne Testzwecke Infos?
+    print(f"[MAIN] Starte Client '{handle}' auf Port {port} mit WHO-Port {whoisport} (auto={auto_mode})")
 
     # Discovery starten
     discovery = DiscoveryService(config_path)  # Discovery-Service initialisieren
@@ -34,7 +40,7 @@ if __name__ == "__main__":
         # Start der Benutzeroberfläche (CLI)
         start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path = config_path, contacts_path=contacts_path)
     except KeyboardInterrupt:
-        print("\nBenutzer hat abgebrochen🛑") # Nachricht bei Abbruch durch Strg+C, wiird von der Main ausgeführt
+        print("\n[MAIN] Abbruch durch Benutzer") # Nachricht bei Abbruch durch Strg+C
     finally:
         discovery.stop()
-        print("Discovery-Dienst gestoppt👋") # Bestätigung der Beendigung, wird von der Main ausgeführt
+        print("[MAIN] Discovery-Dienst gestoppt.") # Bestätigung der Beendigung
