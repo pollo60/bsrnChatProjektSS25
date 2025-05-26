@@ -50,7 +50,7 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
             # Neuen Kontakt anlegen: Frage nach Name und leite weiter
             check_for_contact_list(contacts_path)
             empfaenger = input("Name des Kontakts🆕:  ")
-            kontaktAnlegen(empfaenger, config_path)
+            kontaktAnlegen(empfaenger, contacts_path)
             # Nachricht senden (interaktive Funktion in nachrichtSenden)
 
         elif choice == "5":
@@ -59,7 +59,7 @@ def start_cli(auto=False, handle="", port=5000, whoisport=54321, config_path="",
         
         elif choice == "6":
             check_for_contact_list(contacts_path)
-            kontakteZeigen(config_path)
+            kontakteZeigen(contacts_path)
 
         elif choice.lower() == "q":
 
