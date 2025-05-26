@@ -108,7 +108,7 @@ class DiscoveryService:
 
         # --- WHO ---
         # Beispiel: WHO Alice
-        elif command == "WHO":  #Auch hier den Command abändern?
+        elif command == "WHO":  
             if len(parts) == 2:
                 who_sender_handle = parts[1]
                 print(f"WHO-Anfrage empfangen von {who_sender_handle} ({addr[0]})")
