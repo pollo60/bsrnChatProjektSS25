@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     # Werte aus der geladenen Konfiguration entnehmen
     handle = config.get("handle", "Unbekannt") # Benutzername 
-    port = config.get("port", 5000) # Port für den Client
-    whoisport = config.get("whoisport", 54321) # WHO-Port für Discovery-Kommunikation
+    port = config.get("port", 0000) # Port für den Client, mit standardargument, falls der prozess scheitert
+    whoisport = config.get("whoisport", 1111) # WHO-Port für Discovery-Kommunikation, mit standardargument, falls der prozess scheitert
     # Falls ein Wert fehlt, wird ein Standartwert verwendet
     #print(f"[MAIN] Starte Client '{handle}' auf Port {port} mit WHO-Port {whoisport} (auto={auto_mode})") #Das vielleicht nicht printen? Oder gibt das ohne Testzwecke Infos?
 
