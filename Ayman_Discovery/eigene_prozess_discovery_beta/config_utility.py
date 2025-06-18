@@ -90,6 +90,10 @@ def config_startup():
     broadcast_ip = login_daten.get("ipnetz", "255.255.255.255")
     return config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip
 
+    #debug ausgabe
+    print(f"[DEBUG] config_startup geladen: handle={handle}, port={port}, whoisport={whoisport}, ip={ip}, broadcast_ip={broadcast_ip}")
+    return config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip
+
 def datenAufnehmen():
     """Benutzerdaten vom Terminal abfragen und IP-Daten ergänzen."""
     ip, ipnetz, whoisport = ermittle_ip_und_broadcast()

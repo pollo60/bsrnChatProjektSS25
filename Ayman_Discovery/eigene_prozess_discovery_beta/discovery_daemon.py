@@ -18,6 +18,8 @@ def run_discovery(config_path):
     my_handle = login['name']
     my_port = int(login['port'])
 
+    print(f"[DEBUG-Discovery] Starte mit config: {config_path}, whoisport={whoisport}")
+
     clients = {}
     lock = threading.Lock()
 
@@ -31,6 +33,7 @@ def run_discovery(config_path):
             try:
                 data, addr = sock.recvfrom(BUFFER_SIZE)
                 msg = data.decode().strip()
+                print(f"[DISCOVERY] Nachricht empfangen von {addr}: {msg}")  # 🔍 DEBUG
                 parts = msg.split()
                 if not parts:
                     continue

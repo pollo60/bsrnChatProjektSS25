@@ -3,7 +3,7 @@ import time
 from network_process import send_slcp_broadcast, slcp_MSG
 from config_utility import kontaktAnlegen, kontakteZeigen, check_for_contact_list, configAnzeigen
 
-def start_cli(auto=False, handle="", port=0, whoisport=1111, config_path="", contacts_path="", broadcast_ip="255.255.255.255"):
+def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255"):
     if auto:
         print(f"[AUTO] {handle} tritt dem Netzwerk bei über Port {port} 🚀")
         send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)

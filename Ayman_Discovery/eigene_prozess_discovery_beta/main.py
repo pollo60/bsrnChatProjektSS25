@@ -1,8 +1,6 @@
 # main.py
 import sys
 import multiprocessing
-import time
-import os
 from config_utility import config_startup, get_contacts_path
 from ui import start_cli
 from discovery_daemon import run_discovery

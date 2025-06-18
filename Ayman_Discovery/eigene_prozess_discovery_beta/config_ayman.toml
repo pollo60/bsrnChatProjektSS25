@@ -3,5 +3,5 @@ name = "ayman"
 port = 5001
 ip = "192.168.0.10"
 ipnetz = "192.168.0.255"
-whoisport = 1111
+whoisport = 4000
 hallo = "Servus, hier ist Ayman! 👋"
