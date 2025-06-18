@@ -3,12 +3,10 @@ import time
 from network_process import send_slcp_broadcast, slcp_MSG
 from config_utility import kontaktAnlegen, kontakteZeigen, check_for_contact_list, configAnzeigen
 
-def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255"):
+def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255", message_queue=None):
     if auto:
-        print(f"[AUTO] {handle} tritt dem Netzwerk bei über Port {port} 🚀")
         send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
         time.sleep(1)
-        print("[AUTO] WHO-Anfrage wird gesendet...")
         send_slcp_broadcast("WHO", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
         time.sleep(3)
         return
@@ -28,6 +26,10 @@ q - Programm beenden 👋
 """)
 
     while True:
+        # Nachrichten anzeigen
+        while message_queue and not message_queue.empty():
+            print(message_queue.get())
+
         choice = input("Eingabe: ").strip()
 
         if choice == "1":
@@ -51,9 +53,9 @@ q - Programm beenden 👋
             send_slcp_broadcast("LEAVE", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
             break
         else:
-            print("Ungültige Eingabe ⚠️ Bitte erneut versuchen.")
+            print("Ungültige Eingabe ⚠️")
 
-        time.sleep(1)
+        time.sleep(0.5)
 
 def nachrichtSenden(contacts_path, handle):
     empfaenger = input("Empfänger: ").strip()
@@ -67,6 +69,6 @@ def nachrichtSenden(contacts_path, handle):
 
     success = slcp_MSG(empfaenger, nachricht, contacts_path, handle)
     if success:
-        print("Nachricht erfolgreich gesendet ✅")
+        print("✅ Nachricht gesendet")
     else:
-        print("Nachricht konnte nicht gesendet werden ❌")
+        print("❌ Nachricht fehlgeschlagen")

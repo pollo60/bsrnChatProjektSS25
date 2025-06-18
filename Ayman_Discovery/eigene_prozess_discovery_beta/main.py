@@ -1,29 +1,22 @@
 # main.py
-from message_listener import listen_for_messages
-import threading
-import sys
-import multiprocessing
+from multiprocessing import Process, Queue
 from config_utility import config_startup, get_contacts_path
 from ui import start_cli
-from discovery_daemon import run_discovery
-
+from discovery_daemon_queue import run_discovery
+from message_listener_queue import listen_for_messages
 
 def main():
     config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip = config_startup()
     contacts_path = get_contacts_path()
 
-    # Starte Discovery als separaten Prozess
-    discovery_proc = multiprocessing.Process(
-        target=run_discovery,
-        args=(config_path,)
-    )
-    discovery_proc.start()
-    print("[DEBUG] Discovery-Prozess gestartet")
+    queue = Queue()
 
-    # Startet listeners für Nachrichten
-    receiver_thread = threading.Thread(target=listen_for_messages, args=(port,), daemon=True)
-    receiver_thread.start()
-    print("Debug:listener gestartet ")
+    discovery_proc = Process(target=run_discovery, args=(config_path, queue))
+    receiver_proc = Process(target=listen_for_messages, args=(port, queue))
+    discovery_proc.start()
+    receiver_proc.start()
+
+    print("[DEBUG] Prozesse gestartet")
 
     try:
         start_cli(
@@ -33,14 +26,17 @@ def main():
             whoisport=whoisport,
             config_path=config_path,
             contacts_path=contacts_path,
-            broadcast_ip=broadcast_ip
+            broadcast_ip=broadcast_ip,
+            message_queue=queue
         )
     except KeyboardInterrupt:
-        print("[ABBRUCH] Benutzer hat mit Strg+C beendet.")
+        print("[ABBRUCH] Strg+C erkannt")
     finally:
         discovery_proc.terminate()
+        receiver_proc.terminate()
         discovery_proc.join()
-        print("[ENDE] Discovery-Prozess gestoppt.")
+        receiver_proc.join()
+        print("[ENDE] Prozesse gestoppt.")
 
 if __name__ == "__main__":
     main()
