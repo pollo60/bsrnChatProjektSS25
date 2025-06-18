@@ -1,25 +1,40 @@
-
-import subprocess
+# main.py
 import sys
+import multiprocessing
+import time
 import os
 from config_utility import config_startup, get_contacts_path
 from ui import start_cli
+from discovery_daemon import run_discovery
 
 def main():
-    print("[DEBUG] main.py gestartet.")
     config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip = config_startup()
     contacts_path = get_contacts_path()
 
-    print("[DEBUG] Starte discovery_daemon.py als Subprozess...")
-    subprocess.Popen([sys.executable, "discovery_daemon.py", config_path])
+    # Starte Discovery als separaten Prozess
+    discovery_proc = multiprocessing.Process(
+        target=run_discovery,
+        args=(config_path,)
+    )
+    discovery_proc.start()
+    print("[DEBUG] Discovery-Prozess gestartet")
 
     try:
-        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport,
-                  config_path=config_path, contacts_path=contacts_path, broadcast_ip=broadcast_ip)
+        start_cli(
+            auto=auto_mode,
+            handle=handle,
+            port=port,
+            whoisport=whoisport,
+            config_path=config_path,
+            contacts_path=contacts_path,
+            broadcast_ip=broadcast_ip
+        )
     except KeyboardInterrupt:
-        print("Beendet durch Benutzer.")
+        print("[ABBRUCH] Benutzer hat mit Strg+C beendet.")
     finally:
-        print("Anwendung beendet.")
+        discovery_proc.terminate()
+        discovery_proc.join()
+        print("[ENDE] Discovery-Prozess gestoppt.")
 
 if __name__ == "__main__":
     main()

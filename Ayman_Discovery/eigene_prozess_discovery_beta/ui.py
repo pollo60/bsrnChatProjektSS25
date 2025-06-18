@@ -1,50 +1,72 @@
-import subprocess
-import sys
-import os
+# ui.py
 import time
-import threading
-import toml
+from network_process import send_slcp_broadcast, slcp_MSG
+from config_utility import kontaktAnlegen, kontakteZeigen, check_for_contact_list, configAnzeigen
 
-from ui import start_cli
-from config_utility import config_startup, get_contacts_path
+def start_cli(auto=False, handle="", port=0, whoisport=1111, config_path="", contacts_path="", broadcast_ip="255.255.255.255"):
+    if auto:
+        print(f"[AUTO] {handle} tritt dem Netzwerk bei über Port {port} 🚀")
+        send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
+        time.sleep(1)
+        print("[AUTO] WHO-Anfrage wird gesendet...")
+        send_slcp_broadcast("WHO", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
+        time.sleep(3)
+        return
 
+    print("""
+--------------------------------------
+Waehle eine der folgenden Optionen 👀|
+--------------------------------------
+1 - Netzwerk beitreten 🌐
+2 - Netzwerk verlassen ❌
+3 - WHO-Anfrage senden 🕵️
+4 - Kontakt anlegen ➕
+5 - Nachricht senden ✉️
+6 - Kontakte anzeigen 📗
+7 - Konfigurationsdatei anzeigen 🧩
+q - Programm beenden 👋
+""")
 
-def start_discovery_daemon():
-    """Startet discovery_daemon.py als eigenen Prozess."""
-    return subprocess.Popen([sys.executable, "discovery_daemon.py"])
+    while True:
+        choice = input("Eingabe: ").strip()
 
-def main():
-    print("[MAIN] Starte System...")
+        if choice == "1":
+            send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
+        elif choice == "2":
+            send_slcp_broadcast("LEAVE", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
+        elif choice == "3":
+            send_slcp_broadcast("WHO", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
+        elif choice == "4":
+            check_for_contact_list(contacts_path)
+            empfaenger = input("Name des Kontakts🆕: ").strip()
+            if empfaenger:
+                kontaktAnlegen(empfaenger, contacts_path)
+        elif choice == "5":
+            nachrichtSenden(contacts_path, handle)
+        elif choice == "6":
+            kontakteZeigen(contacts_path)
+        elif choice == "7":
+            configAnzeigen(config_path)
+        elif choice.lower() == "q":
+            send_slcp_broadcast("LEAVE", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
+            break
+        else:
+            print("Ungültige Eingabe ⚠️ Bitte erneut versuchen.")
 
-    # Konfiguration laden
-    config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip = config_startup()
-    contacts_path = get_contacts_path()
+        time.sleep(1)
 
-    print("[MAIN] Starte Discovery-Dienst als externen Prozess...")
-    discovery_proc = start_discovery_daemon()
-    time.sleep(1)  # kleine Wartezeit zur Initialisierung
+def nachrichtSenden(contacts_path, handle):
+    empfaenger = input("Empfänger: ").strip()
+    if not empfaenger:
+        print("Empfänger darf nicht leer sein ⚠️")
+        return
+    nachricht = input("Nachricht: ").strip()
+    if not nachricht:
+        print("Nachricht darf nicht leer sein ⚠️")
+        return
 
-    try:
-        print("[MAIN] Starte CLI...")
-        start_cli(
-            auto=auto_mode,
-            handle=handle,
-            port=port,
-            whoisport=whoisport,
-            config_path=config_path,
-            contacts_path=contacts_path,
-            broadcast_ip=broadcast_ip
-        )
-        if auto_mode:
-            print("[MAIN] Automodus abgeschlossen.")
-
-    except KeyboardInterrupt:
-        print("\n[MAIN] Abbruch durch Benutzer.")
-    finally:
-        print("[MAIN] Beende Discovery-Dienst...")
-        discovery_proc.terminate()
-        discovery_proc.wait(timeout=2)
-        print("[MAIN] Discovery-Dienst gestoppt.")
-
-if __name__ == "__main__":
-    main()
+    success = slcp_MSG(empfaenger, nachricht, contacts_path, handle)
+    if success:
+        print("Nachricht erfolgreich gesendet ✅")
+    else:
+        print("Nachricht konnte nicht gesendet werden ❌")
