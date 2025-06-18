@@ -21,7 +21,7 @@ def run_discovery(config_path, output_queue):
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(("", whoisport))
 
-    print(f"[DISCOVERY] Lausche auf Port {whoisport}...")
+    #print(f"[DISCOVERY] Lausche auf Port {whoisport}...")
 
     clients = {}
 
@@ -29,7 +29,7 @@ def run_discovery(config_path, output_queue):
         try:
             data, addr = sock.recvfrom(BUFFER_SIZE)
             msg = data.decode().strip()
-            print(f"[DISCOVERY] Von {addr}: {msg}")
+            print(f"Von {addr}: {msg}")
             parts = msg.split()
             if not parts:
                 continue
@@ -52,11 +52,11 @@ def run_discovery(config_path, output_queue):
                 sock.sendto(response.encode(), addr)
 
         except Exception as e:
-            output_queue.put(f"[DISCOVERY] Fehler: {e}")
+            output_queue.put(f"Fehler: {e}")
 
 def save_clients(clients):
     try:
         with open(COMM_FILE, 'w') as f:
             json.dump(clients, f)
     except Exception as e:
-        print("[DISCOVERY] Fehler beim Speichern:", e)
+        print("Fehler beim Speichern:", e)
