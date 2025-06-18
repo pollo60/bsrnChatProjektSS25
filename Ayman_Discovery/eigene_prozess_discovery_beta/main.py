@@ -1,9 +1,12 @@
 # main.py
+from message_listener import listen_for_messages
+import threading
 import sys
 import multiprocessing
 from config_utility import config_startup, get_contacts_path
 from ui import start_cli
 from discovery_daemon import run_discovery
+
 
 def main():
     config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip = config_startup()
@@ -16,6 +19,11 @@ def main():
     )
     discovery_proc.start()
     print("[DEBUG] Discovery-Prozess gestartet")
+
+    # Startet listeners für Nachrichten
+    receiver_thread = threading.Thread(target=listen_for_messages, args=(port,), daemon=True)
+    receiver_thread.start()
+    print("Debug:listener gestartet ")
 
     try:
         start_cli(
