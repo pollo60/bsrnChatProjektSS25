@@ -10,12 +10,12 @@ import ipaddress # Für IP-Adressen und Netzwerke
 # -------------------------------------
 
 def ermittle_ip_und_broadcast():
-    ##
-    # @brief Überprüft die aktuelle Broadcast und IP-Adresse im Netzwerk
-    # Simulierteine Verbindung zu Googles DNS um herrauszufinden welche IP-Adresse im Netzwerk zugewiesen ist.
-    # Berechnet das Subnetz um eine Broadcast zu ermitteln
-    # @return tuple IP-Adresse und Breadcast Adresse als String
-    """Ermittelt lokale IP und zugehörige Broadcast-Adresse (Subnetz /24)."""
+    """
+     @brief Überprüft die aktuelle Broadcast und IP-Adresse im Netzwerk
+     Simulierteine Verbindung zu Googles DNS um herrauszufinden welche IP-Adresse im Netzwerk zugewiesen ist.
+     Berechnet das Subnetz um eine Broadcast zu ermitteln
+     @return tuple IP-Adresse und Breadcast Adresse als String
+    """
     try:
         #Erstellt UDP-Socket tepmporär um IP zu ermittlen
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -31,15 +31,16 @@ def ermittle_ip_und_broadcast():
         return "127.0.0.1", "255.255.255.255", 1111 # return auf Localhost und Broadcast
 
 def validate_port(port):
-    ##
-    # @brief Überprüft ob ein Portwert gültig ist
-    # 
-    # Stellt sicher, dass der gegebene Port gültig ist in dem es den übergebenen Port in eine Zahl zwischen 
-    # 0 und 65535 wandelt. 
-    # Falls Port ungültig, wird das Programm beendet
-    # @param port Portnummer als Zahl oder String
-    # @return int als Gültige Portnummer
-    #
+    """"
+     @brief Überprüft ob ein Portwert gültig ist
+     
+    Stellt sicher, dass der gegebene Port gültig ist in dem es den übergebenen Port in eine Zahl zwischen 
+    0 und 65535 wandelt. 
+    Falls Port ungültig, wird das Programm beendet
+     @param port Portnummer als Zahl oder String
+     @return int als Gültige Portnummer
+     """
+    
 
     """Prüft, ob der Port im gültigen Bereich liegt."""
     try:
@@ -57,15 +58,15 @@ def validate_port(port):
 # -------------------------------------
 
 def config_startup():
-    ## 
-    # @brief Läd Konfig Datei oder erstellt eine neue falls nicht vorhanden
-    #
-    # Diese Funktion läd beim Programmstart Benutzdaten aus den jeweiligen TOML-Konfig Dateien. 
-    # Es werden bereits bestehende Dateien geladen oder neue erstellt.
-    #
-    # Prüfung des Auto Modus was eine manuelle Eingabe unterdrücken könnte
-    # @return Pfad zur Konfig Datei, Benutzname, Port, WHOIS-Port. IP-Adresse und Broadcast-Adresse
-
+    """"
+     @brief Läd Konfig Datei oder erstellt eine neue falls nicht vorhanden
+    
+     Diese Funktion läd beim Programmstart Benutzdaten aus den jeweiligen TOML-Konfig Dateien. 
+     Es werden bereits bestehende Dateien geladen oder neue erstellt.
+    
+     Prüfung des Auto Modus was eine manuelle Eingabe unterdrücken könnte
+     @return Pfad zur Konfig Datei, Benutzname, Port, WHOIS-Port. IP-Adresse und Broadcast-Adresse
+"""
     """Lädt Konfiguration aus Datei oder legt neue an."""
     auto_mode = "--auto" in sys.argv # Prüft ob --auto als Agument gültig ist
     using_custom_config = len(sys.argv) > 1 and not sys.argv[1].startswith("--") # Prüft ob eine externe Datei übergeben wurde
@@ -141,11 +142,11 @@ def datenAufnehmen():
     }
 
 def inConfigSchreiben(login_daten, config_path):
-    ## 
-    # @brief Speichert Login Daten in TOML Datei
-    # @param login Daten dict mit Benutzer
-    # @param config path zur Konfig Datei
-    #
+    """"
+     @brief Speichert Login Daten in TOML Datei
+    @param login Daten dict mit Benutzer
+    @param config path zur Konfig Datei
+    """
 
     """Speichert Login-Daten in eine TOML-Datei."""
     try:
@@ -162,11 +163,11 @@ def inConfigSchreiben(login_daten, config_path):
         print(f"[FEHLER] Konnte Konfiguration nicht speichern: {e}")
 
 def configAnzeigen(config_path):
-    ##
-    # @brief zeigt Konfig Datei im Terminal an
-    # @param config path Pfad zur Datei
-    #
-    """Zeigt die gespeicherte Konfigurationsdatei an."""
+    """"
+     @brief zeigt Konfig Datei im Terminal an
+     @param config path Pfad zur Datei
+    """
+    
     try:
         with open(config_path, 'r') as f:
             config = toml.load(f)
@@ -179,22 +180,22 @@ def configAnzeigen(config_path):
 # -------------------------------------
 
 def get_contacts_path():
-    ##
-    # @brief zeigt Kontakte des aktuellen Benutzeres an
-    # @return str Pfad zu Kontaktdatei
-    #
-    """Pfad zur Kontaktdatei des Nutzers."""
+    """"
+     @brief zeigt Kontakte des aktuellen Benutzeres an
+     @return str Pfad zu Kontaktdatei
+    """
+    
     username = getpass.getuser()
     contacts_dir = os.path.expanduser("~/.bsrnchat")
     os.makedirs(contacts_dir, exist_ok=True)
     return os.path.join(contacts_dir, f"contacts_{username}.toml")
 
 def check_for_contact_list(contacts_path):
-    ##
-    # @brief Prüft ob die Kontakte existieren
-    # @param contacts path zur Kontakt Datei
-    #
-    """Stellt sicher, dass eine gültige Kontaktdatei existiert."""
+    """"
+     @brief Prüft ob die Kontakte existieren
+     @param contacts path zur Kontakt Datei
+    """
+    
     if not os.path.exists(contacts_path):
         # Erstellt neue Datei falls keine existiert
         print(f"[INFO] Kontaktliste wird angelegt: {contacts_path}")
@@ -212,12 +213,12 @@ def check_for_contact_list(contacts_path):
                 f.write("[kontakte]\n")
 
 def kontaktAnlegen(empfaenger, contacts_path):
-    ##
-    # @brief Fügt Kontakte zu Kontaktliste hinzu
-    # @param Name von neuen Kontakt
-    # @param contacts path zur Kontaktdatei
-    #
-    """Fügt einen Kontakt hinzu (manuell durch Eingabe)."""
+    """"
+    @brief Fügt Kontakte zu Kontaktliste hinzu
+    @param Name von neuen Kontakt
+    @param contacts path zur Kontaktdatei
+    """
+   
     try:
         with open(contacts_path, 'r') as f:
             contacts = toml.load(f)
@@ -233,15 +234,15 @@ def kontaktAnlegen(empfaenger, contacts_path):
     }
 
     with open(contacts_path, 'w') as f:
-        toml.dump(contacts, f) # Änderungen Speichern
+        toml.dump(contacts, f) # Kontaktänderungen Speichern
 
     print("Kontakt gespeichert ✅")
 
 def kontakteZeigen(contacts_path):
-    ##
-    # @brief Zeiegt gespeicherte Kontake im Terminal an
-    # @param contact path zur Konfi Datei
-    #
+    """"
+     @brief Zeiegt gespeicherte Kontake im Terminal an
+     @param contact path zur Konfi Datei
+    """
     """Gibt alle Kontakte im Terminal aus."""
     try:
         with open(contacts_path, 'r') as f:
