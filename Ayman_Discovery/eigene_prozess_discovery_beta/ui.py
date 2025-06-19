@@ -2,8 +2,8 @@
 import time
 from network_process import send_slcp_broadcast, slcp_MSG
 from config_utility import kontaktAnlegen, kontakteZeigen, check_for_contact_list, configAnzeigen
-
-def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255", message_queue=None):
+import json
+def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255",input_queue=None, message_queue=None):
     if auto:
         send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
         time.sleep(1)
@@ -33,31 +33,31 @@ q - Programm beenden 👋
         choice = input("Eingabe: ").strip()
 
         if choice == "1":
-            send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
+            input_queue.put(("JOIN", handle, str(port)))
         elif choice == "2":
-            send_slcp_broadcast("LEAVE", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
+            input_queue.put(("LEAVE", handle, ""))
         elif choice == "3":
-            send_slcp_broadcast("WHO", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
+            input_queue.put(("WHO", handle, ""))
         elif choice == "4":
             check_for_contact_list(contacts_path)
             empfaenger = input("Name des Kontakts🆕: ").strip()
             if empfaenger:
                 kontaktAnlegen(empfaenger, contacts_path)
         elif choice == "5":
-            nachrichtSenden(contacts_path, handle)
+            nachrichtSenden(contacts_path, handle, input_queue)
         elif choice == "6":
             kontakteZeigen(contacts_path)
         elif choice == "7":
             configAnzeigen(config_path)
         elif choice.lower() == "q":
-            send_slcp_broadcast("LEAVE", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
+            input_queue.put(("LEAVE", handle, ""))
             break
         else:
             print("Ungültige Eingabe ⚠️")
 
         time.sleep(0.5)
 
-def nachrichtSenden(contacts_path, handle):
+def nachrichtSenden(contacts_path, handle, input_queue):
     empfaenger = input("Empfänger: ").strip()
     if not empfaenger:
         print("Empfänger darf nicht leer sein ⚠️")
@@ -66,9 +66,5 @@ def nachrichtSenden(contacts_path, handle):
     if not nachricht:
         print("Nachricht darf nicht leer sein ⚠️")
         return
-
-    success = slcp_MSG(empfaenger, nachricht, contacts_path, handle)
-    if success:
-        print("✅ Nachricht gesendet")
-    else:
-        print("❌ Nachricht fehlgeschlagen")
+    #Bis hier her erstmal die Nachricht eingeben
+    input_queue.put(("CHAT", handle, json.dumps({"empfaenger": empfaenger, "nachricht": nachricht, "contacts_path": contacts_path})))
