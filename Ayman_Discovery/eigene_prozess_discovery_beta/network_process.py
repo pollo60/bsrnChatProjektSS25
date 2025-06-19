@@ -10,14 +10,23 @@ from queue import Queue, Empty
 COMM_FILE = "discovery_output.json"
 
 class NetworkMessage:
+    """ @brief Netzwerk Nachicht mit Nummer"""
     sequence_counter = 0
 
     @classmethod
     def next_sequence(cls):
+        """@brief listet nächste Nummer"""
         cls.sequence_counter += 1
         return cls.sequence_counter
 
     def __init__(self, command, handle, timestamp=None, content=""):
+        """@brief Initiealisiert Nachicht
+        
+        @param command Befehlstyp
+        @param handle Benutzername
+        @param timestamp Zeitstempel
+        @param content Nachichtentext
+        """
         self.command = command
         self.handle = handle
         self.timestamp = timestamp if timestamp else time.time()
@@ -26,6 +35,7 @@ class NetworkMessage:
         self.checksum = None
 
     def bytestream(self):
+        """@brief Intiealisiert Nachicht und berechnet Summe"""
         data = {
             'command': self.command,
             'handle': self.handle,
@@ -40,6 +50,10 @@ class NetworkMessage:
 
     @classmethod
     def back_to_message(cls, data):
+        """
+        @brief Wandelt Daten in Networkmessage
+        @return Networkmessage oder nichts bei Fehler
+        """
         try:
             parsed = toml.loads(data.decode('utf-8'))
             msg = cls(
@@ -55,6 +69,11 @@ class NetworkMessage:
             return None
 
     def validate(self):
+        """
+        @brief Prüft die Nachicht nach Summe
+        
+         @return True wenn gültig, false wenn nicht
+         """
         if not self.checksum:
             return False
         data = {
@@ -69,7 +88,13 @@ class NetworkMessage:
 
 #Sollte hier der slcp broadcast mittels sockets kommunizieren?
 def send_slcp_broadcast(msg_queue: Queue, port=42069, broadcast_ip="255.255.255.255"):
-    """Sendet eine SLCP-Broadcast-Nachricht."""
+
+    """
+    @brief  Sendet eine SLCP-Broadcast-Nachricht
+    @param msg_queue Warteschlange mit handle, command und content
+    @param port Zieltort
+    @param Boradcast IP
+    """
     while True:
         try:
             # Versuche, eine Nachricht aus der Queue zu lesen (mit Timeout, damit der Thread sauber beenden könnte)
@@ -111,7 +136,16 @@ def send_slcp_broadcast(msg_queue: Queue, port=42069, broadcast_ip="255.255.255.
 #Hier kommuniziert SLCP über UDP, aber wir sollen doch eig im Netzwerk über queues kommunizieren
 #Er darf über UDP kommuizieren, es geht um die befehle von der Benutzerschnittstelle an den Netzwerkmanager
 def slcp_MSG(empfaenger, content, contacts_path, handle):
-    """Sendet eine Nachricht an einen Kontakt aus der Kontaktliste."""
+    
+    """
+    @brief Sendet eine Nachricht an einen Kontakt aus der Kontaktliste
+    @param empfänger Kontaktliste
+    @param content Nachichtentext
+    @param contacts path Pfad zur Kontaktliste
+    @param handle Benutzername
+    @return True wenn gültig, false wenn nicht
+    
+    """
     try:
         contacts = adressbuch(contacts_path)
         if not contacts:
@@ -129,7 +163,12 @@ def slcp_MSG(empfaenger, content, contacts_path, handle):
 
 
 def adressbuch(contacts_path):
-    """Lädt die Kontaktliste aus einer TOML-Datei."""
+    """
+    @brief  Lädt die Kontaktliste aus einer TOML-Datei
+    @param contact path zu Datei
+    @return Dict wenn Kontakte da, ansonsten none
+
+    """
     try:
         with open(contacts_path, 'r') as f:
             data = toml.load(f)
@@ -145,7 +184,10 @@ def adressbuch(contacts_path):
 
 
 def find_contact(empfaenger, contacts):
-    """Sucht einen Kontakt anhand des Namens."""
+    """@brief Sucht einen Kontakt anhand des Namens
+    @param empfänger Kontakte
+    @return Kontaktinfo oder none
+     """
     for name, info in contacts.items():
         if name.lower() == empfaenger.strip().lower():
             return {
@@ -157,7 +199,13 @@ def find_contact(empfaenger, contacts):
 
 #Kann man diese Funktion mittels Queues lösen -> wg direct messaging
 def send_to_address(message, ip, port):
-    """Sendet eine Nachricht an eine bestimmte IP und Port."""
+    """
+    @brief Sendet eine Nachricht an eine bestimmte IP und Port
+    @param message Network
+    @param ip Ziel IP
+    @param port Ziel Port
+    @return True wbei Erfolg oder False
+    """
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.settimeout(5.0)
@@ -170,7 +218,13 @@ def send_to_address(message, ip, port):
 
 
 def get_discovered_clients():
-    """Liest bekannte Nutzer aus der JSON-Zwischendatei."""
+
+    """
+    @brief Liest bekannte Nutzer aus der JSON-Zwischendatei
+    @return Clients oder nichts bei Fehler
+    
+    
+    """
     if not os.path.exists(COMM_FILE):
         return {}
     try:
