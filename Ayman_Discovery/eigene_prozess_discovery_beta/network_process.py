@@ -5,6 +5,7 @@ import hashlib
 import time
 import json
 import os
+from queue import Queue, Empty
 
 COMM_FILE = "discovery_output.json"
 
@@ -66,25 +67,49 @@ class NetworkMessage:
         expected = hashlib.md5(toml.dumps(data).encode()).hexdigest()[:8]
         return self.checksum == expected
 
-
-def send_slcp_broadcast(command, handle, content="", port=42069, broadcast_ip="255.255.255.255"):
+#Sollte hier der slcp broadcast mittels sockets kommunizieren?
+def send_slcp_broadcast(msg_queue: Queue, port=42069, broadcast_ip="255.255.255.255"):
     """Sendet eine SLCP-Broadcast-Nachricht."""
-    try:
-        msg = NetworkMessage(command, handle, content=content)
-        data = msg.bytestream()
+    while True:
+        try:
+            # Versuche, eine Nachricht aus der Queue zu lesen (mit Timeout, damit der Thread sauber beenden könnte)
+            command, handle, content = msg_queue.get(timeout=1)
 
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            sock.sendto(data, (broadcast_ip, port))
-            sock.settimeout(5.0)
+            if command in {"JOIN", "LEAVE", "WHO"}:
+                # Standard-Broadcast
+                msg = NetworkMessage(command, handle, content=content)
+                data = msg.bytestream()
 
-        print(f"[Network] Broadcast gesendet: {command} von {handle}")
-        return True
-    except Exception as e:
-        print(f"[Network] Broadcast-Fehler: {e}")
-        return False
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                    sock.sendto(data, (broadcast_ip, port))
+                    sock.settimeout(5.0)
 
+                print(f"[Network] Broadcast gesendet: {command} von {handle}")
+            elif command == "CHAT":
+                # Einzel-Nachricht, content ist JSON-kodiert
+                payload = json.loads(content)
+                empfaenger = payload["empfaenger"]
+                nachricht = payload["nachricht"]
+                contacts_path = payload["contacts_path"]
+                contacts = adressbuch(contacts_path)
+                if not contacts:
+                    print("[Network] Keine Kontakte gefunden")
+                    continue
+                target = find_contact(empfaenger, contacts)
+                if not target:
+                    print(f"[Network] Empfänger '{empfaenger}' nicht gefunden")
+                    continue
+                msg = NetworkMessage("CHAT", handle, content=nachricht)
+                send_to_address(msg, target["ip"], target["port"])
+        except Empty:
+            # Keine Nachricht in der Queue: einfach warten
+            continue
+        except Exception as e:
+            print(f"[Network] Broadcast-Fehler: {e}")
 
+#Hier kommuniziert SLCP über UDP, aber wir sollen doch eig im Netzwerk über queues kommunizieren
+#Er darf über UDP kommuizieren, es geht um die befehle von der Benutzerschnittstelle an den Netzwerkmanager
 def slcp_MSG(empfaenger, content, contacts_path, handle):
     """Sendet eine Nachricht an einen Kontakt aus der Kontaktliste."""
     try:
@@ -97,6 +122,7 @@ def slcp_MSG(empfaenger, content, contacts_path, handle):
             return False
         msg = NetworkMessage("CHAT", handle, content=content)
         return send_to_address(msg, target['ip'], target['port'])
+    
     except Exception as e:
         print(f"[Network] Fehler beim Senden: {e}")
         return False
@@ -129,7 +155,7 @@ def find_contact(empfaenger, contacts):
             }
     return None
 
-
+#Kann man diese Funktion mittels Queues lösen -> wg direct messaging
 def send_to_address(message, ip, port):
     """Sendet eine Nachricht an eine bestimmte IP und Port."""
     try:
