@@ -4,7 +4,20 @@ from network_process import send_slcp_broadcast, slcp_MSG
 from config_utility import kontaktAnlegen, kontakteZeigen, check_for_contact_list, configAnzeigen
 import json
 def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255",input_queue=None, message_queue=None):
-    if auto:
+   """
+    @brief Startet die Kommandozeile
+
+    @param JOIN und WHO werden gesendet
+    @param handle Benutzername
+    @param port Eigener Port
+    @param whoisport Port für WHO-Anfragen
+    @param config_path Pfad zur Konfigurationsdatei
+    @param contacts path Pfad zur Kontaktliste
+    @param broadcast_ip Broadcast-IP-Adresse
+    @param input queue Queue für ausgehende Befehle
+    @param message queue Queue für eingehende Nachrichten
+    """
+   if auto:
         send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
         time.sleep(1)
         send_slcp_broadcast("WHO", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
@@ -26,6 +39,7 @@ q - Programm beenden 👋
 """)
 
     while True:
+
         # Nachrichten anzeigen
         while message_queue and not message_queue.empty():
             print(message_queue.get())
@@ -58,6 +72,11 @@ q - Programm beenden 👋
         time.sleep(0.5)
 
 def nachrichtSenden(contacts_path, handle, input_queue):
+    """@brief Liest Empänger und Nachihcten ein
+    @param contacts path zur Kontaktliste
+    @param handle Benutzername
+    @param input queue für Befehle
+    """
     empfaenger = input("Empfänger: ").strip()
     if not empfaenger:
         print("Empfänger darf nicht leer sein ⚠️")
