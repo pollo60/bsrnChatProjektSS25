@@ -7,15 +7,28 @@ from message_listener_queue import listen_for_messages
 from network_process import send_slcp_broadcast
 
 def main():
+
+    """
+    @brief Huaptprozess des Gesamten Progamms. Started alle Prozesse 
+
+     - Läd Die Konfigurationsdatein und Kontaktlisten
+     - Initialisiert IPC für Kommunikation zwischen Clients/Prozessen
+     - Startet : Discovery, Broadcast und Nachichtenempänger
+     - Kommandozeile wird ausgeführt
+     - Beedndet Prozesse mit Strg+C
+
+"""
     config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip = config_startup()
     contacts_path = get_contacts_path()
-
+    # Queue für Netzwerkprozess
     input_queue = Queue()   # Befehle von UI an Netzwerkprozess
     output_queue = Queue()  # Netzwerk-Nachrichten an UI
 
-    # Prozesse starten
+    # Erstellt und started Discovery Process
     discovery_proc = Process(target=run_discovery, args=(config_path, output_queue))
+    # Erstellt und startet Nachihchten Prozess
     receiver_proc = Process(target=listen_for_messages, args=(port, output_queue))
+    # Erstellt und started Broadcast
     network_proc = Process(target=send_slcp_broadcast, args=(input_queue, whoisport, broadcast_ip))
 
     discovery_proc.start()
@@ -25,6 +38,7 @@ def main():
     print("[DEBUG] Prozesse gestartet")
 
     try:
+        #Startet CLI
         start_cli(
             auto=auto_mode,
             handle=handle,
@@ -37,8 +51,10 @@ def main():
             input_queue=input_queue
         )
     except KeyboardInterrupt:
+        # Benutzer hat das Programm Beendet
         print("[ABBRUCH] Strg+C erkannt")
     finally:
+        # Prozesse beenden und Ressourcen freigeben
         discovery_proc.terminate()
         receiver_proc.terminate()
         network_proc.terminate()
@@ -49,4 +65,10 @@ def main():
         print("[ENDE] Prozesse gestoppt.")
 
 if __name__ == "__main__":
+    """
+    @brief Startpunkt
+
+    Führt main Funktion aus
+
+    """
     main()
