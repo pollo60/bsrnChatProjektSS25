@@ -4,7 +4,7 @@ from network_process import send_slcp_broadcast, slcp_MSG
 from config_utility import kontaktAnlegen, kontakteZeigen, check_for_contact_list, configAnzeigen
 import json
 def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255",input_queue=None, message_queue=None):
-   """
+    """
     @brief Startet die Kommandozeile
 
     @param JOIN und WHO werden gesendet
@@ -17,7 +17,7 @@ def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", con
     @param input queue Queue für ausgehende Befehle
     @param message queue Queue für eingehende Nachrichten
     """
-   if auto:
+    if auto:
         send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
         time.sleep(1)
         send_slcp_broadcast("WHO", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
