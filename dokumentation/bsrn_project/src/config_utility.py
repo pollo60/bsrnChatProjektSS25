@@ -220,7 +220,7 @@ def kontaktAnlegen(empfaenger, contacts_path):
     """
    
     try:
-
+        
         with open(contacts_path, 'r') as f:
             contacts = toml.load(f)
     except FileNotFoundError:
@@ -235,7 +235,7 @@ def kontaktAnlegen(empfaenger, contacts_path):
     }
 
 
-    
+
     with open(contacts_path, 'w') as f:
 
         toml.dump(contacts, f) # Kontaktänderungen Speichern
