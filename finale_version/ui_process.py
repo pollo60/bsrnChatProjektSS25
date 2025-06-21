@@ -13,6 +13,8 @@ def ui_process(ui_queue, disc_queue, net_queue, config_path):
         "2 - WHO senden\n"
         "3 - MSG senden\n"
         "4 - LEAVE senden\n"
+        "5 - Kontakte anzeigen\n"
+        "6 - Konfiguration anzeigen\n"
         "9 - Beenden\n"
     )
 
@@ -38,6 +40,14 @@ def ui_process(ui_queue, disc_queue, net_queue, config_path):
 
             elif cmd == "4":
                 disc_queue.put(f"LEAVE {handle}")
+
+            elif cmd == "5":
+                disc_queue.put("KONTAKTE")
+
+            elif cmd == "6":
+                print("[CONFIG] Aktuelle Konfiguration:")
+                for key, value in config.items():
+                    print(f"  {key}: {value}")
 
             elif cmd == "9":
                 print("Beende Chat-Client.")
