@@ -1,213 +1,92 @@
-import socket       # Für die UDP-Kommunikation im lokalen Netzwerk
-import threading    # Damit wir mehrere Ports gleichzeitig abhören können (multithreading)
-import toml         # Um Konfigurationsdaten aus der Datei config.toml zu lesen
+# discovery_daemon_queue.py
+import socket # Für Netzwerk-Kommunikation mit UDP
+import toml # Liest TOML Datein ein
+import time # Zeitfunktion (noch nicht im gebrauch ?)
+import json # Zum speichern der Teilnehmer Listen in JSON Format
+import os # Für Dateioperationen
 
-BUFFER_SIZE = 1024  # Max. Größe für empfangene Nachrichten (UDP hat eine Begrenzung)
+BUFFER_SIZE = 1024 # Puffergröße der eigehenden UDP-Nachichten
+COMM_FILE = "discovery_output.json" # Datei zum Speichern der aktives Clients
 
-## \class DiscoveryService
-#  \brief Service für Discovery und Verwaltung bekannter Clients im lokalen Netzwerk
-#
-#  Verantwortlich für fast alles,-:
-#   - Broadcasts (JOIN, WHO, LEAVE, KNOWUSERS)
-#   - Verwaltung der bekannten Clients (handle, IP, Port)
-#   - Senden von Antworten auf Discovery-Anfragen
+def run_discovery(config_path, output_queue):
+    """
+    @brief Startet Discovery Dienst zur Verwaltung von Teilnehmern
 
+    Funktion läd Konfig aus TOML Dateien (Nutzer daten),- und öffnet UDP Socket um auf
+    Discovery Nachichten zu lauschen. 
+    Verarbeitet außerdem join, leave und who Nachichten und aktualiesiert die client Dienste + 
+    return per Queue.
 
-class DiscoveryService:
-    def __init__(self, config_path="config.toml"):
-        # Hier speichern wir bekannte Clients: {handle: (ip, port)}
-        self.clients = {}
+    @param config path zur Konfig TOML Datei
+    @param output que zur kommunikation
 
-        # Kontrollvariable, um die Listener bei Bedarf zu stoppen
-        self.running = True
+    """
+    # Lade Konfig Datei
+    with open(config_path, 'r', encoding="utf-8") as f:
+        config = toml.load(f)
 
-        # Konfiguration laden (z. B. Handle, Port, whoisport)
-        self.config = toml.load(config_path)
+    # Extrahiere Login Daten aus Konfig
+    login = config['login_daten']
+    whoisport = int(login['whoisport'])
+    my_handle = login['name']
+    my_port = int(login['port'])
 
-        # Port, auf dem Discovery-Broadcasts (JOIN, WHO, LEAVE) empfangen werden
-        self.whoisport = self.config['whoisport']
+    # Erstellt und konfiguriert UDP Socket
 
-        # Unser eigener Handle (Name des Nutzers)
-        self.my_handle = self.config.get("handle", "").strip()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(("", whoisport))
 
-        # Unser persönlicher Kommunikationsport (für direkte Antworten)
-        self.my_port = self.config.get("port", 5000)
+    # print(f"[DISCOVERY] Lausche auf Port {whoisport}...")
+    # Verwaltung der Clients
+    clients = {}
 
-        # Lock zur Synchronisation – wichtig bei parallelem Zugriff auf self.clients
-        self.lock = threading.Lock()
-
-        # Eigene IP-Adresse im Netzwerk ermitteln
-        self.local_ip = self.get_local_ip()
-
-## \brief Startet zwei Threads zum Lauschen auf den Ports (whoisport & eigener port)
-
-def start(self):
-        """
-        Startet zwei parallele Threads:
-        - einen für den Broadcast-Port (whoisport)
-        - einen für den eigenen Kommunikationsport (port)
-        """
-        threading.Thread(target=self.listen_on_port, args=("WHOIS-Port", self.whoisport), daemon=True).start()
-        threading.Thread(target=self.listen_on_port, args=("Eigen-Port", self.my_port), daemon=True).start()
-
-
- ## \brief Lauscht auf eingehende Nachrichten auf einem bestimmten Port
-    #  \param port_name Beschreibender Name des Ports für Ausgaben
-    #  \param port_value Portnummer
-
-def listen_on_port(self, port_name, port_value):
-        """
-        Lauscht auf eingehende Nachrichten auf einem bestimmten Port.
-        Wird in einem separaten Thread für jeden Port gestartet.
-        """
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.bind(('', port_value))  # Bind an lokale IPs auf dem angegebenen Port
-            print(f"📡 Lausche auf {port_name} (Port {port_value})...")
-
-            while self.running:
-                try:
-                    # Warte auf eingehende Nachricht
-                    data, addr = sock.recvfrom(BUFFER_SIZE) # Nachicht empfangen
-                    message = data.decode().strip()
-                    print(f"\n📥 Neue Nachricht auf {port_name} von {addr}: {message}")
-
-                    # Nachricht verarbeiten
-                    self.handle_message(message, addr, sock)
-
-                except ConnectionResetError:
-                    print(f"⚠️ Verbindung auf {port_name} wurde getrennt.")
-                except Exception as e:
-                    print(f"⚠️ Fehler beim Lauschen auf {port_name}: {e}")
-
-## \brief Verarbeitet eingehende Nachrichten und reagiert auf JOIN, WHO, LEAVE und KNOWUSERS
-    #  \param message Empfangene Nachricht als String
-    #  \param addr Adresse (IP, Port) des Senders
-    #  \param sock Socket zum Antworten (UDP)
-
-def handle_message(self, message, addr, sock):
-        """
-        Zentrale Funktion zum Verarbeiten von eingehenden SLCP-Nachrichten.
-        Erkennt JOIN, WHO, LEAVE, KNOWUSERS.
-        """
-        parts = message.split()
-        if not parts:
-            return  # leere Nachricht → ignorieren
-
-        command = parts[0].upper()
-
-        # --- JOIN ---
-        # Beispiel: JOIN Alice 5000
-        if command == "JOIN" and len(parts) == 3:
-            handle = parts[1]
-            port = int(parts[2])
-
-            # In Liste aufnehmen
-            with self.lock:
-                self.clients[handle] = (addr[0], port)
-
-            # Rückmeldung je nach Absender
-            if addr[0] == self.local_ip and handle == self.my_handle:
-                print(f"✅ Du ({handle}) hast erfolgreich dem Chat beigetreten.")
-            else:
-                print(f"✅ {handle} ist jetzt online unter {addr[0]}:{port}")
-
-        # --- WHO ---
-        # Beispiel: WHO Alice
-        elif command == "WHO":
-            if len(parts) == 2:
-                who_sender_handle = parts[1]
-                print(f"📡 WHO-Anfrage empfangen von {who_sender_handle} ({addr[0]})")
-
-                # Sende automatische JOIN-Antwort zurück, damit der WHO-Sender uns sehen kann
-                join_message = f"JOIN {self.my_handle} {self.my_port}"
-                sock.sendto(join_message.encode(), (addr[0], self.whoisport))
-                print(f"↩️ JOIN-Antwort an {who_sender_handle} gesendet: {join_message}")
-            else:
-                print("⚠️ WHO-Nachricht ohne Handle empfangen – wird ignoriert.")
-
-        # --- LEAVE ---
-        # Beispiel: LEAVE Alice
-        elif command == "LEAVE" and len(parts) == 2:
-            handle = parts[1]
-            with self.lock:
-                self.clients.pop(handle, None)
-
-            # Rückmeldung je nach Absender
-            if addr[0] == self.local_ip and handle == self.my_handle:
-                print(f"👋 Du ({handle}) hast den Chat verlassen.")
-            else:
-                print(f"👋 {handle} hat den Chat verlassen.")
-
-        # --- KNOWUSERS ---
-        # Beispiel: KNOWUSERS Alice 192.168.0.5 5000, Bob 192.168.0.7 5001
-        elif command == "KNOWUSERS":
-            user_entries = message[len("KNOWUSERS "):].split(", ")
-            added_list = []
-
-            with self.lock:
-                for entry in user_entries:
-                    try:
-                        handle, ip, port = entry.strip().split()
-                        port = int(port)
-
-                        # Nicht sich selbst oder doppelte Nutzer einfügen
-                        if handle != self.my_handle and handle not in self.clients:
-                            self.clients[handle] = (ip, port)
-                            added_list.append((handle, ip, port))
-                    except ValueError:
-                        continue  # ignorieren, falls fehlerhaft
-
-            if added_list:
-                print("📃 Entdeckte Nutzer:")
-                for h, ip, port in added_list:
-                    print(f"- {h} ({ip}:{port})")
-            else:
-                print("📃 Keine neuen Nutzer entdeckt (oder bereits bekannt).")
-
-## \brief Sendet eine KNOWUSERS-Nachricht mit allen bekannten Clients an Zieladresse
-    #  \param target_addr des Empfängers
-    #                \param sock Socket zum Senden der nachricht
-
-    def send_known_users(self, target_addr, sock):
-        """
-        Sendet eine KNOWUSERS-Nachricht mit allen bekannten Clients
-        an die angegebene Zieladresse.
-        """
-        with self.lock:
-            if not self.clients:
-                userlist = "Niemand online"
-            else:           # Benutzerliste als string zusammenbauen
-                userlist = ", ".join([
-                    f"{handle} {ip} {port}"
-                    for handle, (ip, port) in self.clients.items()
-                ])
-
-        response = f"KNOWUSERS {userlist}\n"
-        sock.sendto(response.encode(), target_addr)
-        print(f"📤 Gesendet an {target_addr}: {response.strip()}")
-
-
-## \brief Stoppt die such-schleifen und beendet den Service
-    def stop(self):
-        """
-        Beendet die beiden Listener.
-        """
-        self.running = False
-        print("🛑 Discovery-Service wurde gestoppt.")
-
-## \brief Ermittelt die lokale IP-Adresse des Rechners
-    #  \return IP-Adresse als String 
-    #  Nutzt eine UDP-Verbindung zu Google DNS, um die lokale IP zu ermitteln
-    
- def get_local_ip(self):
-        """
-        Ermittelt die lokale IP-Adresse des Rechners,
-        indem eine "Fake-Verbindung" zu einer externen IP hergestellt wird.
-        """
+    while True:
         try:
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                s.connect(("8.8.8.8", 80))  # Verbindung muss nicht tatsächlich erfolgen
-                return s.getsockname()[0]
-        except:
-            return "127.0.0.1"  # Fallback für lokale Tests
+            # Warte auf UDP Packete
+            data, addr = sock.recvfrom(BUFFER_SIZE)
+            msg = data.decode().strip() # Dekodiert Nachichten
+            print(f"Von {addr}: {msg}") # Debug Ausgabe
+            parts = msg.split()
+            if not parts:
+                continue # Leere Nachichten ignorieren
+
+            cmd = parts[0].upper() # Initialisiere Befehle join, leave und who
+            if cmd == "JOIN" and len(parts) == 3:
+                # Neuer Client tritt bei
+                h, p = parts[1], int(parts[2])
+                clients[h] = (addr[0], p) # IP Adresse wird angezeigt
+                save_clients(clients)
+                output_queue.put(f"{h} ist beigetreten ({addr[0]}:{p})")
+
+            elif cmd == "LEAVE" and len(parts) == 2:
+                # Ein Client verlässt das Netzwerrk
+                h = parts[1]
+                clients.pop(h, None) # Entferne Client
+                save_clients(clients)
+                output_queue.put(f"{h} hat das Netzwerk verlassen.")
+
+            elif cmd == "WHO":
+                # Who Anfrage beantworten
+                response = f"JOIN {my_handle} {my_port}"
+                sock.sendto(response.encode(), addr)
+
+        except Exception as e:
+            # Fehler an die Hauptanwendung senden
+            output_queue.put(f"Fehler: {e}")
+
+def save_clients(clients):
+
+    """
+    @brief Speichert Liste aller Cleients in JSON Datei
+    
+    Datei zeigt aktive Benutzer an
+
+    @param erstellt eine Liste mit zugehörigen Handles und IP Port
+
+    """
+    try:
+        with open(COMM_FILE, 'w') as f:
+            json.dump(clients, f)
+    except Exception as e:
+        print("Fehler beim Speichern:", e)
