@@ -1,46 +1,75 @@
+# main.py
+from multiprocessing import Process, Queue
+from config_utility import config_startup, get_contacts_path
+from ui import start_cli
+from discovery_daemon_queue import run_discovery
+from message_listener_queue import listen_for_messages
+from network_process import send_slcp_broadcast
 
-## \file main.copy.py
-## \brief Hauptprogramm zum Starten des Chat-Clients und Discovery-dienstes
-## Lädt die Konfiguration, startet den discovery-Service und die Benutzeroberfläche 
+def main():
 
-import sys # Importieren des sys-Moduls für Systemfunktionen
-import os # Importieren des os-Moduls zur Arbeit mit Pfaden
-import toml  # Importieren des toml-Moduls zum Lesen/Schreiben von TOML-Dateien
-from discovery import DiscoveryService # Importieren des Discovery-Dienstes
-from ui import start_cli # Importieren der CLI-Funktion für Benutzerinteraktionen
-from config_utility import config_startup, get_contacts_path # Importieren der Konfigurationsstart-Funktion
+    """
+    @brief Huaptprozess des Gesamten Progamms. Started alle Prozesse 
+
+     - Läd Die Konfigurationsdatein und Kontaktlisten
+     - Initialisiert IPC für Kommunikation zwischen Clients/Prozessen
+     - Startet : Discovery, Broadcast und Nachichtenempänger
+     - Kommandozeile wird ausgeführt
+     - Beedndet Prozesse mit Strg+C
+
+"""
+    config_path, auto_mode, handle, port, whoisport, ip, broadcast_ip = config_startup()
+    contacts_path = get_contacts_path()
+    # Queue für Netzwerkprozess
+    input_queue = Queue()   # Befehle von UI an Netzwerkprozess
+    output_queue = Queue()  # Netzwerk-Nachrichten an UI
+
+    # Erstellt und started Discovery Process
+    discovery_proc = Process(target=run_discovery, args=(config_path, output_queue))
+    # Erstellt und startet Nachihchten Prozess
+    receiver_proc = Process(target=listen_for_messages, args=(port, output_queue))
+    # Erstellt und started Broadcast
+    network_proc = Process(target=send_slcp_broadcast, args=(input_queue, whoisport, broadcast_ip))
+
+    discovery_proc.start()
+    receiver_proc.start()
+    network_proc.start()
+
+    print("[DEBUG] Prozesse gestartet")
+
+    try:
+        #Startet CLI
+        start_cli(
+            auto=auto_mode,
+            handle=handle,
+            port=port,
+            whoisport=whoisport,
+            config_path=config_path,
+            contacts_path=contacts_path,
+            broadcast_ip=broadcast_ip,
+            message_queue=output_queue,
+            input_queue=input_queue
+        )
+    except KeyboardInterrupt:
+        # Benutzer hat das Programm Beendet
+        print("[ABBRUCH] Strg+C erkannt")
+    finally:
+        # Prozesse beenden und Ressourcen freigeben
+        discovery_proc.terminate()
+        receiver_proc.terminate()
+        network_proc.terminate()
+
+        discovery_proc.join()
+        receiver_proc.join()
+        network_proc.join()
+        print("[ENDE] Prozesse gestoppt.")
 
 if __name__ == "__main__":
+    """
+    @brief Startpunkt
 
-    ## Hauptstartpunkt des Programms.
- config_path, auto_mode = config_startup()  # Pfad zur Konfigurationsdatei & Automodus ermitteln
+    Führt main Funktion aus
 
-    contacts_path = get_contacts_path()
+    """
+    main()
 
-    # TOML-Konfigurationsdatei mit `with open(...)` laden
-    try:
-        with open(config_path, 'r') as f:
-            config = toml.load(f) # Konfigurationsdaten aus Datei lesen
-    except Exception as e:
-        print(f"Fehler beim Laden der Konfigurationsdatei: {e}") # Fehlermeldung ausgeben
-        sys.exit(1) # Programm beenden
-
-    # Werte aus der geladenen Konfiguration entnehmen
-    handle = config.get("handle", "Unbekannt") # Benutzername 
-    port = config.get("port", 5000) # Port für den Client
-    whoisport = config.get("whoisport", 54321) # WHO-Port für Discovery-Kommunikation
-    # Falls ein Wert fehlt, wird ein Standartwert verwendet
-    print(f"[MAIN] Starte Client '{handle}' auf Port {port} mit WHO-Port {whoisport} (auto={auto_mode})")
-
-    # Discovery starten
-    discovery = DiscoveryService(config_path)  # Discovery-Service initialisieren
-    discovery.start()  # Discovery-Dienst starten
-
-    try:
-        # Start der Benutzeroberfläche (CLI)
-        start_cli(auto=auto_mode, handle=handle, port=port, whoisport=whoisport, config_path = config_path, contacts_path=contacts_path)
-    except KeyboardInterrupt:
-        print("\n[MAIN] Abbruch durch Benutzer") # Nachricht bei Abbruch durch Strg+C
-    finally:
-        discovery.stop()
-        print("[MAIN] Discovery-Dienst gestoppt.") # Bestätigung der Beendigung
