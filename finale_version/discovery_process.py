@@ -20,12 +20,13 @@ def discovery_process(ui_queue, disc_queue, config_path, kontakte):
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.bind(("", udp_port))
     sock.setblocking(False)
+    ui_queue.put(f"[DEBUG] Eigene IP-Adresse: {local_ip}")
 
     while True:
-        # Eingehende UDP-Nachrichten behandeln
         try:
             data, addr = sock.recvfrom(512)
             message = data.decode("utf-8").strip()
+            ui_queue.put(f"[DEBUG] UDP empfangen: {message} von {addr}")
             if message.startswith("JOIN"):
                 _, name, port = message.split()
                 users[name] = (addr[0], int(port))
