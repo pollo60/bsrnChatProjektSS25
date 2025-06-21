@@ -13,7 +13,7 @@ def network_process(ui_queue, net_queue, config_path, kontakte):
 
     ui_queue.put(f"[NETWORK] TCP listening on port {tcp_port}")
 
-    server.setblocking(False)
+    server.setblocking(0.5)
 
     while True:
         try:
