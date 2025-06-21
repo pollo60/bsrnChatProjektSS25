@@ -10,7 +10,11 @@ def discovery_process(ui_queue, disc_queue, config_path, kontakte):
     udp_port = config["whoisport"]
     local_port = config["port"]
 
-    users = {handle: ("localhost", local_port)}  # sich selbst eintragen
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+
+    users = {handle: (local_ip, local_port)}  # sich selbst mit echter IP eintragen
+    kontakte[handle] = (local_ip, local_port)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
