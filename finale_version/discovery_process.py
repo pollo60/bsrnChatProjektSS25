@@ -1,19 +1,23 @@
 ## discovery_process.py
 import socket
 import toml
+import time
 
 def discovery_process(ui_queue, disc_queue, config_path):
     config = toml.load(config_path)
     handle = config["handle"]
     udp_port = config["whoisport"]
+    local_port = config["port"]
 
-    users = {}
+    users = {handle: ("localhost", local_port)}  # sich selbst eintragen
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.bind(("", udp_port))
+    sock.setblocking(False)
 
     while True:
+        # Eingehende UDP-Nachrichten behandeln
         try:
             data, addr = sock.recvfrom(512)
             message = data.decode("utf-8").strip()
@@ -31,6 +35,30 @@ def discovery_process(ui_queue, disc_queue, config_path):
                 _, name = message.split()
                 users.pop(name, None)
                 ui_queue.put(f"[DISCOVERY] {name} left the chat")
+
+        except BlockingIOError:
+            pass  # keine Nachricht angekommen
+
+        # Eingaben vom UI prüfen
+        try:
+            while not disc_queue.empty():
+                cmd = disc_queue.get()
+                if cmd == "WHO":
+                    sock.sendto(b"WHO", ("255.255.255.255", udp_port))
+                    ui_queue.put("[DISCOVERY] WHO-Anfrage gesendet.")
+                    time.sleep(1.0)
+                    if users:
+                        ui_queue.put("[DISCOVERY] Bekannte Nutzer:")
+                        for name, (ip, port) in users.items():
+                            ui_queue.put(f"  - {name} @ {ip}:{port}")
+                    else:
+                        ui_queue.put("[DISCOVERY] Keine Nutzer gefunden.")
+                elif cmd.startswith("JOIN"):
+                    sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
+                    ui_queue.put("[DISCOVERY] JOIN-Nachricht gesendet.")
+                elif cmd.startswith("LEAVE"):
+                    sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
+                    ui_queue.put("[DISCOVERY] LEAVE-Nachricht gesendet.")
 
         except Exception as e:
             ui_queue.put(f"[DISCOVERY ERROR] {e}")
