@@ -12,12 +12,15 @@ if __name__ == "__main__":
     # Konfigurationsdatei aus Argumenten lesen oder Standard verwenden
     config_path = sys.argv[1] if len(sys.argv) > 1 else "config.toml"
 
+    manager = multiprocessing.Manager()
+    kontakte = manager.dict()
+
     ui_queue = multiprocessing.Queue()
     disc_queue = multiprocessing.Queue()
     net_queue = multiprocessing.Queue()
 
-    p1 = multiprocessing.Process(target=discovery_process, args=(ui_queue, disc_queue, config_path))
-    p2 = multiprocessing.Process(target=network_process, args=(ui_queue, net_queue, config_path))
+    p1 = multiprocessing.Process(target=discovery_process, args=(ui_queue, disc_queue, config_path, kontakte))
+    p2 = multiprocessing.Process(target=network_process, args=(ui_queue, net_queue, config_path, kontakte))
 
     p1.start()
     p2.start()
