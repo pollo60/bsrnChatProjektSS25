@@ -12,15 +12,18 @@ def discovery_process(ui_queue, disc_queue, config_path, kontakte):
 
     hostname = socket.gethostname()
     local_ip = socket.gethostbyname(hostname)
+    ui_queue.put(f"[DEBUG] Eigene IP-Adresse: {local_ip}")
 
-    users = {handle: (local_ip, local_port)}  # sich selbst mit echter IP eintragen
+    users = {handle: (local_ip, local_port)}
     kontakte[handle] = (local_ip, local_port)
+
+    beigetreten = False
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(("", udp_port))
     sock.setblocking(False)
-    ui_queue.put(f"[DEBUG] Eigene IP-Adresse: {local_ip}")
 
     while True:
         try:
@@ -29,10 +32,12 @@ def discovery_process(ui_queue, disc_queue, config_path, kontakte):
             ui_queue.put(f"[DEBUG] UDP empfangen: {message} von {addr}")
             if message.startswith("JOIN"):
                 _, name, port = message.split()
+                if name == handle:
+                    continue  # Eigene JOIN-Nachricht ignorieren
                 users[name] = (addr[0], int(port))
                 kontakte[name] = (addr[0], int(port))
                 ui_queue.put(f"[DISCOVERY] {name} joined from {addr[0]}:{port}")
-                if name != handle:
+                if name != handle and beigetreten:
                     ui_queue.put(f"[INFO] Neuer Teilnehmer entdeckt: {name} ist dem Chat beigetreten.")
 
             elif message == "WHO":
@@ -78,6 +83,8 @@ def discovery_process(ui_queue, disc_queue, config_path, kontakte):
                 elif cmd.startswith("JOIN"):
                     sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
                     ui_queue.put("[DISCOVERY] JOIN-Nachricht gesendet.")
+                    beigetreten = True
+
                 elif cmd.startswith("LEAVE"):
                     sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
                     ui_queue.put("[DISCOVERY] LEAVE-Nachricht gesendet.")

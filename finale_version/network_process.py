@@ -13,7 +13,7 @@ def network_process(ui_queue, net_queue, config_path, kontakte):
 
     ui_queue.put(f"[NETWORK] TCP listening on port {tcp_port}")
 
-    server.setblocking(0.5)
+    server.settimeout(0.5)
 
     while True:
         try:
@@ -22,7 +22,7 @@ def network_process(ui_queue, net_queue, config_path, kontakte):
             message = data.decode("utf-8")
             ui_queue.put(f"[MESSAGE from {addr}] {message}")
             conn.close()
-        except BlockingIOError:
+        except socket.timeout:
             pass
 
         while not net_queue.empty():
@@ -37,7 +37,9 @@ def network_process(ui_queue, net_queue, config_path, kontakte):
                             ip, port = ip_port
                             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                             sock.connect((ip, port))
-                            sock.sendall(nachricht.encode("utf-8"))
+                            nachricht_mit_name = f"{handle}: {nachricht}"
+                            sock.sendall(nachricht_mit_name.encode("utf-8"))
+                            ui_queue.put(f"[DEBUG] TCP gesendet an {ip}:{port} -> {nachricht_mit_name}")
                             sock.close()
                             ui_queue.put(f"[NETWORK] Nachricht an {empfaenger} gesendet: {nachricht}")
                         except Exception as e:

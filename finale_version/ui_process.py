@@ -2,58 +2,68 @@
 import time
 import toml
 
+import threading
+
 def ui_process(ui_queue, disc_queue, net_queue, config_path):
-    config = toml.load(config_path)
-    handle = config["handle"]
-    port = config["port"]
+    print("Willkommen zum Chat (CLI).\n")
+    print("[Menü] Wähle eine Option:")
+    print("1 - JOIN senden")
+    print("2 - WHO senden")
+    print("3 - MSG senden")
+    print("4 - LEAVE senden")
+    print("5 - Kontakte anzeigen")
+    print("6 - Konfiguration anzeigen")
+    print("9 - Beenden")
 
-    menu = (
-        "\n[Menü] Wähle eine Option:\n"
-        "1 - JOIN senden\n"
-        "2 - WHO senden\n"
-        "3 - MSG senden\n"
-        "4 - LEAVE senden\n"
-        "5 - Kontakte anzeigen\n"
-        "6 - Konfiguration anzeigen\n"
-        "9 - Beenden\n"
-    )
+    def live_output():
+        while True:
+            while not ui_queue.empty():
+                msg = ui_queue.get()
+                print(msg)
+            time.sleep(0.1)
 
-    print("Willkommen zum Chat (CLI).")
+    threading.Thread(target=live_output, daemon=True).start()
 
     while True:
-        while not ui_queue.empty():
-            print(ui_queue.get(), flush=True)
+        # UI wird nun live durch Thread aktualisiert
 
-        print(menu)
-        try:
-            cmd = input("> Auswahl: ").strip()
-            if cmd == "1":
-                disc_queue.put(f"JOIN {handle} {port}")
+        time.sleep(0.1)  # Ermöglicht UI-Aktualisierung ohne Eingabe
 
-            elif cmd == "2":
-                disc_queue.put("WHO")
+        cmd = input("Auswahl: ").strip()
 
-            elif cmd == "3":
-                empfaenger = input("Empfänger (Handle): ").strip()
-                nachricht = input("Nachricht: ").strip()
-                net_queue.put(f"MSG {empfaenger} {nachricht}")
+        if cmd == "1":
+            config = toml.load(config_path)
+            handle = config["handle"]
+            port = config["port"]
+            disc_queue.put(f"JOIN {handle} {port}")
 
-            elif cmd == "4":
-                disc_queue.put(f"LEAVE {handle}")
+        elif cmd == "2":
+            disc_queue.put("WHO")
 
-            elif cmd == "5":
-                disc_queue.put("KONTAKTE")
+        elif cmd == "3":
+            empfaenger = input("Empfänger: ").strip()
+            text = input("Nachricht: ").strip()
+            net_queue.put(f"MSG {empfaenger} {text}")
 
-            elif cmd == "6":
-                print("[CONFIG] Aktuelle Konfiguration:")
-                for key, value in config.items():
-                    print(f"  {key}: {value}")
+        elif cmd == "4":
+            config = toml.load(config_path)
+            handle = config["handle"]
+            disc_queue.put(f"LEAVE {handle}")
 
-            elif cmd == "9":
-                print("Beende Chat-Client.")
-                break
+        elif cmd == "5":
+            disc_queue.put("KONTAKTE")
 
-        except EOFError:
+        elif cmd == "6":
+            config = toml.load(config_path)
+            print("[KONFIGURATION]")
+            for k, v in config.items():
+                print(f"{k} = {v}")
+
+        elif cmd == "9":
+            print("Beende Anwendung...")
             break
+
+        else:
+            print("Ungültiger Befehl.")
 
         time.sleep(0.1)
