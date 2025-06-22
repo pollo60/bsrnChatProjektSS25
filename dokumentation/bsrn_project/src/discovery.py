@@ -1,92 +1,134 @@
-# discovery_daemon_queue.py
-import socket # Für Netzwerk-Kommunikation mit UDP
-import toml # Liest TOML Datein ein
-import time # Zeitfunktion (noch nicht im gebrauch ?)
-import json # Zum speichern der Teilnehmer Listen in JSON Format
-import os # Für Dateioperationen
+##
+#@file discovery_process
+#
+#@brief Der Discovery Prozess dient zur Netzwerkkommunikation im gesamten Programm.
+#
+# Aufgaben:
+# 1. Reagiert auf Nachichten und Befehle anderer User im Netzwerk
+# 2. Aktualisiert Userlisten
+# 3. Benutzt UDP Sockets für Broadcast Nachrichten
+# 4. Verarbeitet Befehle aus der CLI
+#
+#
+# Das Programm regelt die gesamte Netzwerkkommunikation wie zb. MSG, WHO und JOIN.
+# Des weiteren kommuniziert es mit dem User Interface um Userdaten aktuell zu halten
+#
 
-BUFFER_SIZE = 1024 # Puffergröße der eigehenden UDP-Nachichten
-COMM_FILE = "discovery_output.json" # Datei zum Speichern der aktives Clients
+import socket       # Für Netzwerkkommunikation (UDP-Sockets)
+import toml         # Für das Einlesen der Konfigurationsdatei
+import time         # Für kleine Wartezeiten 
+import os           # keine relevanz
 
-def run_discovery(config_path, output_queue):
+# Hauptfunktion des Discovery-Prozesses
+def discovery_process(ui_queue, disc_queue, config_path, kontakte):
     """
-    @brief Startet Discovery Dienst zur Verwaltung von Teilnehmern
-
-    Funktion läd Konfig aus TOML Dateien (Nutzer daten),- und öffnet UDP Socket um auf
-    Discovery Nachichten zu lauschen. 
-    Verarbeitet außerdem join, leave und who Nachichten und aktualiesiert die client Dienste + 
-    return per Queue.
-
-    @param config path zur Konfig TOML Datei
-    @param output que zur kommunikation
-
+    @brief Hauptprozess des Discovery - verwaltet JOIN, WHO und LEAVE
+    
+    @param ui queue - Warteschlange für das UI
+    @param disc queue - Warteschlange für CLI Befehle
+    @param config path - Pfad für die TOML Userdaten
+    @param kontakte - Liste mit bekannten Usern
     """
-    # Lade Konfig Datei
-    with open(config_path, 'r', encoding="utf-8") as f:
-        config = toml.load(f)
+    # Konfiguration aus .toml-Datei laden
+    config = toml.load(config_path)
+    handle = config["handle"]            # Eigener Nutzername
+    udp_port = config["whoisport"]       # Port für WHO-/JOIN-/LEAVE-Kommunikation
+    local_port = config["port"]          # Eigener TCP-Port für direkte Kommunikation
 
-    # Extrahiere Login Daten aus Konfig
-    login = config['login_daten']
-    whoisport = int(login['whoisport'])
-    my_handle = login['name']
-    my_port = int(login['port'])
+    # Eigene IP-Adresse ermitteln und ausgeben
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    ui_queue.put(f"Eigene IP-Adresse: {local_ip}")
 
-    # Erstellt und konfiguriert UDP Socket
+    # Lokalen Nutzer zu Kontakt- und Userliste hinzufügen
+    users = {handle: (local_ip, local_port)}
+    kontakte[handle] = (local_ip, local_port)
 
+    # Status-Flag, ob der Nutzer dem Chat beigetreten ist
+    beigetreten = False
+
+    # UDP-Socket für Broadcast öffnen
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(("", whoisport))
+    sock.bind(("", udp_port))         # Auf allen Schnittstellen lauschen
+    sock.setblocking(False)           # Nicht blockierend – sofort weiterarbeiten
 
-    # print(f"[DISCOVERY] Lausche auf Port {whoisport}...")
-    # Verwaltung der Clients
-    clients = {}
-
+    # Endlosschleife zum Verarbeiten von eingehenden UDP-Nachrichten und Befehlen aus CLI
     while True:
+        # Eingehende UDP-Nachrichten verarbeiten (JOIN, WHO,LEAVE)
         try:
-            # Warte auf UDP Packete
-            data, addr = sock.recvfrom(BUFFER_SIZE)
-            msg = data.decode().strip() # Dekodiert Nachichten
-            print(f"Von {addr}: {msg}") # Debug Ausgabe
-            parts = msg.split()
-            if not parts:
-                continue # Leere Nachichten ignorieren
+            data, addr = sock.recvfrom(512)
+            message = data.decode("utf-8").strip()
+            #ui_queue.put(f"[DEBUG] UDP empfangen: {message} von {addr}") # fügt message der Warteschlange hinzu
 
-            cmd = parts[0].upper() # Initialisiere Befehle join, leave und who
-            if cmd == "JOIN" and len(parts) == 3:
-                # Neuer Client tritt bei
-                h, p = parts[1], int(parts[2])
-                clients[h] = (addr[0], p) # IP Adresse wird angezeigt
-                save_clients(clients)
-                output_queue.put(f"{h} ist beigetreten ({addr[0]}:{p})")
+            # JOIN-Nachricht: neuer Nutzer möchte dem Chat beitreten
+            if message.startswith("JOIN"):
+                _, name, port = message.split()
+                if name == handle:
+                    continue  # Eigene JOIN-Nachricht ignorieren
+                users[name] = (addr[0], int(port))
+                kontakte[name] = (addr[0], int(port))
+                ui_queue.put(f"[DISCOVERY] {name} joined from {addr[0]}:{port}")
+                if name != handle and beigetreten:
+                    ui_queue.put(f"[INFO] Neuer Teilnehmer entdeckt: {name} ist dem Chat beigetreten.")
 
-            elif cmd == "LEAVE" and len(parts) == 2:
-                # Ein Client verlässt das Netzwerrk
-                h = parts[1]
-                clients.pop(h, None) # Entferne Client
-                save_clients(clients)
-                output_queue.put(f"{h} hat das Netzwerk verlassen.")
+            # WHO-Anfrage erhalten – andere Clients möchten wissen, wer online ist
+            elif message == "WHO":
+                ui_queue.put(f"[DISCOVERY] WHO-Anfrage empfangen von {addr[0]}:{addr[1]}")
+                known = ", ".join(f"{n} {ip} {p}" for n, (ip, p) in users.items())
+                response = f"KNOWNUSERS {known}"
+                sock.sendto(response.encode("utf-8"), addr)
 
-            elif cmd == "WHO":
-                # Who Anfrage beantworten
-                response = f"JOIN {my_handle} {my_port}"
-                sock.sendto(response.encode(), addr)
+            # LEAVE-Nachricht – jemand verlässt den Chat
+            elif message.startswith("LEAVE"):
+                _, name = message.split()
+                users.pop(name, None)
+                kontakte.pop(name, None)
+                ui_queue.put(f"[DISCOVERY] {name} left the chat")
+
+        except BlockingIOError:
+            pass  # Kein Datenpaket erhalten → einfach weitermachen
+
+        # CLI-Kommandos aus disc_queue verarbeiten (JOIN, WHO, LEAVE, KONTAKTE)
+        try:
+            while not disc_queue.empty():
+                cmd = disc_queue.get()
+
+                # WHO-Anfrage ausgehend: wir wollen wissen, wer im Netzwerk aktiv ist
+                if cmd == "WHO":
+                    sock.sendto(b"WHO", ("255.255.255.255", udp_port))  # WHO an alle
+                    ui_queue.put("[DISCOVERY] WHO-Anfrage gesendet.")
+                    time.sleep(1.0)  # Warten, um Antworten zu sammeln
+                    kontakte.clear()
+                    for name, (ip, port) in users.items():
+                        kontakte[name] = (ip, port)
+                    if kontakte:
+                        ui_queue.put("[DISCOVERY] Bekannte Nutzer:")
+                        for name, (ip, port) in kontakte.items():
+                            ui_queue.put(f"  - {name} @ {ip}:{port}")
+                    else:
+                        ui_queue.put("[DISCOVERY] Keine Nutzer gefunden.")
+
+                # Kontaktliste anzeigen lassen
+                elif cmd == "KONTAKTE":
+                    if kontakte:
+                        ui_queue.put("[KONTAKTE] Aktuell gespeicherte Kontakte:")
+                        for name, (ip, port) in kontakte.items():
+                            ui_queue.put(f"  - {name} @ {ip}:{port}")
+                    else:
+                        ui_queue.put("[KONTAKTE] Noch keine Kontakte gespeichert. Bitte WHO ausführen.")
+
+                # JOIN-Befehl senden (wenn Nutzer dem Netzwerk beitritt)
+                elif cmd.startswith("JOIN"):
+                    sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
+                    ui_queue.put("[DISCOVERY] JOIN-Nachricht gesendet.")
+                    beigetreten = True
+
+                # LEAVE-Befehl senden (wenn Nutzer den Chat verlässt)
+                elif cmd.startswith("LEAVE"):
+                    sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
+                    ui_queue.put("[DISCOVERY] LEAVE-Nachricht gesendet.")
 
         except Exception as e:
-            # Fehler an die Hauptanwendung senden
-            output_queue.put(f"Fehler: {e}")
-
-def save_clients(clients):
-
-    """
-    @brief Speichert Liste aller Cleients in JSON Datei
-    
-    Datei zeigt aktive Benutzer an
-
-    @param erstellt eine Liste mit zugehörigen Handles und IP Port
-
-    """
-    try:
-        with open(COMM_FILE, 'w') as f:
-            json.dump(clients, f)
-    except Exception as e:
-        print("Fehler beim Speichern:", e)
+            ui_queue.put(f"[DISCOVERY ERROR] {e}")
