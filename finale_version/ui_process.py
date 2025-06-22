@@ -1,96 +1,93 @@
-import time           # Für Pausen, z. B. bei Wartezyklen
-import toml           # Zum Einlesen der Konfigurationsdatei
-import threading      # Für parallelen Live-Ausgabe-Thread
+import time           
+import toml           
+import threading      
 
-# Hauptfunktion für die Benutzeroberfläche (läuft im Hauptprozess)
 def ui_process(ui_queue, disc_queue, net_queue, config_path):
-    # Menü anzeigen
-    print("Willkommen zum Chat (CLI).\n")
-    print("[Menü] Wähle eine Option:")
-    print("1 - JOIN senden")
-    print("2 - WHO senden")
-    print("3 - MSG senden")
-    print("4 - LEAVE senden")
-    print("5 - Kontakte anzeigen")
-    print("6 - Konfiguration anzeigen")
-    print("7 - Bild senden")
-    print("9 - Beenden")
+    # Menu zeigen
+    print("Chat CLI - Willkommen!\n")
+    print("Was möchtest du machen?")
+    print("1 - Chat beitreten (JOIN)")
+    print("2 - Wer ist online? (WHO)")
+    print("3 - Nachricht senden")
+    print("4 - Chat verlassen (LEAVE)")
+    print("5 - Kontakte zeigen")
+    print("6 - Config anzeigen")
+    print("7 - Bild verschicken")
+    print("9 - Programm beenden")
 
-    # Funktion für parallele Anzeige von Ausgaben aus anderen Prozessen
-    def live_output():
+    # Background thread für live output
+    def output_handler():
         while True:
             while not ui_queue.empty():
-                msg = ui_queue.get()   # Nachricht aus UI-Queue holen
-                print(msg)             # Auf Konsole ausgeben
-            time.sleep(0.1)            # Kurze Pause zwischen den Checks
+                output_msg = ui_queue.get()   
+                print(output_msg)             
+            time.sleep(0.1)            
 
-    # Startet einen Daemon-Thread für Live-Ausgabe (läuft im Hintergrund)
-    threading.Thread(target=live_output, daemon=True).start()
+    # Daemon thread starten
+    threading.Thread(target=output_handler, daemon=True).start()
 
-    # Hauptschleife: wartet auf Benutzereingaben
+    # Main input loop
     while True:
-        time.sleep(0.1)  # Kleiner Delay für reibungslose Darstellung
+        time.sleep(0.1)  
 
-        # Eingabeaufforderung anzeigen
-        cmd = input("Auswahl: ").strip()
+        user_input = input("Option wählen: ").strip()
 
-        # 1 - JOIN senden
-        if cmd == "1":
-            config = toml.load(config_path)
-            handle = config["handle"]
-            port = config["port"]
-            disc_queue.put(f"JOIN {handle} {port}")  # an Discovery-Prozess
+        # JOIN senden
+        if user_input == "1":
+            cfg = toml.load(config_path)
+            username = cfg["handle"]
+            port_num = cfg["port"]
+            disc_queue.put(f"JOIN {username} {port_num}")  
 
-        # 2 - WHO senden (Broadcast: Wer ist online?)
-        elif cmd == "2":
+        # WHO broadcast
+        elif user_input == "2":
             disc_queue.put("WHO")
 
-        # 3 - MSG senden (Textnachricht an bestimmten Client)
-        elif cmd == "3":
-            empfaenger = input("Empfänger: ").strip()
-            text = input("Nachricht: ").strip()
-            net_queue.put(f"MSG {empfaenger} {text}")  # an Network-Prozess
+        # Message senden
+        elif user_input == "3":
+            recipient = input("An wen? ").strip()
+            msg_text = input("Nachricht: ").strip()
+            net_queue.put(f"MSG {recipient} {msg_text}")  
 
-        # 4 - LEAVE senden
-        elif cmd == "4":
-            config = toml.load(config_path)
-            handle = config["handle"]
-            disc_queue.put(f"LEAVE {handle}")
+        # LEAVE
+        elif user_input == "4":
+            cfg = toml.load(config_path)
+            username = cfg["handle"]
+            disc_queue.put(f"LEAVE {username}")
 
-        # 5 - Kontakte anzeigen
-        elif cmd == "5":
+        # Kontakte anzeigen
+        elif user_input == "5":
             disc_queue.put("KONTAKTE")
 
-        # 6 - Konfiguration anzeigen (aus config.toml)
-        elif cmd == "6":
-            config = toml.load(config_path)
-            print("[KONFIGURATION]")
-            for k, v in config.items():
-                print(f"{k} = {v}")
+        # Config anzeigen
+        elif user_input == "6":
+            cfg = toml.load(config_path)
+            print("[AKTUELLE CONFIG]")
+            for key, value in cfg.items():
+                print(f"{key} = {value}")
 
-        # 7 - Bild senden
-        elif cmd == "7":
-            empfaenger = input("Empfänger: ").strip()
-            pfad = input("Pfad zur Bilddatei: ").strip()
+        # Bild senden
+        elif user_input == "7":
+            recipient = input("Empfänger: ").strip()
+            image_path = input("Pfad zum Bild: ").strip()
             import os
-            if os.path.exists(pfad):  # Datei vorhanden?
+            if os.path.exists(image_path):  
                 from pathlib import Path
-                with open(pfad, "rb") as f:
-                    data = f.read()   # Datei vollständig einlesen
-                filename = Path(pfad).name
-                size = len(data)
-                # Sende-Befehl an network_process
-                net_queue.put(f"IMG_SEND {empfaenger} {filename} {size}::{pfad}")
+                with open(image_path, "rb") as f:
+                    file_data = f.read()   
+                img_filename = Path(image_path).name
+                img_size = len(file_data)
+                net_queue.put(f"IMG_SEND {recipient} {img_filename} {img_size}::{image_path}")
             else:
-                print("[FEHLER] Bilddatei nicht gefunden.")
+                print("[FEHLER] Bilddatei nicht vorhanden.")
 
-        # 9 - Beenden
-        elif cmd == "9":
-            print("Beende Anwendung...")
+        # Beenden
+        elif user_input == "9":
+            print("Tschüss!")
             break
 
-        # Ungültige Eingabe
+        # ungültige eingabe
         else:
-            print("Ungültiger Befehl.")
+            print("Unbekannte Option.")
 
-        time.sleep(0.1)  # Kleine Pause, damit alles synchron bleibt
+        time.sleep(0.1)

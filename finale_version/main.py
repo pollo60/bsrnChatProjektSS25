@@ -1,54 +1,78 @@
-# Standard-Module importieren
-import multiprocessing  # Für parallele Prozesse und Queues
-import sys              # Für Zugriff auf Kommandozeilenargumente
-import toml             # Für Laden der Konfigurationsdatei
+import multiprocessing  
+import sys              
+import toml             
+import os
 
-# Eigene Module (Prozess-Logik)
 from discovery_process import discovery_process
 from network_process import network_process
 from ui_process import ui_process
 
-# Nur ausführen, wenn direkt gestartet (nicht importiert)
 if __name__ == "__main__":
-    # Windows braucht 'spawn' als Startmethode für multiprocessing
-    multiprocessing.set_start_method("spawn")  # Alternativ: 'fork' auf Unix-Systemen
+    # Windows braucht spawn
+    multiprocessing.set_start_method("spawn")  
 
-    # Konfigurationspfad aus Argument übergeben oder Standard verwenden
-    config_path = sys.argv[1] if len(sys.argv) > 1 else "config.toml"
+    # Script-Verzeichnis ermitteln
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Config file aus args oder default
+    if len(sys.argv) > 1:
+        cfg_filename = sys.argv[1]
+        # Wenn nur der Dateiname angegeben wird, im Script-Verzeichnis suchen
+        if not os.path.dirname(cfg_filename):
+            cfg_path = os.path.join(script_dir, cfg_filename)
+        else:
+            # Vollständiger Pfad wurde angegeben
+            cfg_path = cfg_filename
+    else:
+        # Standard config.toml 
+        cfg_path = os.path.join(script_dir, "config.toml")
+    
+    # Prüfen ob Config-Datei existiert
+    if not os.path.exists(cfg_path):
+        print(f"FEHLER: Config-Datei '{cfg_path}' nicht gefunden!")
+        print("Verfügbare Config-Dateien im Script-Verzeichnis:")
+        for file in os.listdir(script_dir):
+            if file.endswith('.toml'):
+                print(f"  - {file}")
+        print(f"\nVerwendung: python {sys.argv[0]} [config-datei]")
+        print("Hinweis: Wenn nur der Dateiname angegeben wird, wird im Script-Verzeichnis gesucht.")
+        sys.exit(1)
 
-    # Gemeinsame Datenstruktur (wird von mehreren Prozessen genutzt)
-    manager = multiprocessing.Manager()
-    kontakte = manager.dict()  # Kontaktliste für Discovery + Netzwerk
+    print(f"Verwende Config: {cfg_path}")
 
-    # Queues für die Interprozesskommunikation (Message-Passing zwischen Prozessen)
-    ui_queue = multiprocessing.Queue()     # Von Discovery/Netzwerk zur UI (Ausgaben)
-    disc_queue = multiprocessing.Queue()   # Von UI zu Discovery (JOIN, WHO, LEAVE)
-    net_queue = multiprocessing.Queue()    # Von UI zu Netzwerk (MSG, IMG_SEND)
+    # Shared data zwischen processes
+    mgr = multiprocessing.Manager()
+    contact_list = mgr.dict()  
 
-    # Discovery-Prozess starten (JOIN, WHO, LEAVE per UDP)
-    p1 = multiprocessing.Process(
+    # Inter-process communication queues 
+    ui_msg_queue = multiprocessing.Queue()     # discovery/network -> ui
+    discovery_cmd_queue = multiprocessing.Queue()   # ui -> discovery
+    network_cmd_queue = multiprocessing.Queue()    # ui -> network
+
+    # Discovery process (UDP)
+    disc_proc = multiprocessing.Process(
         target=discovery_process,
-        args=(ui_queue, disc_queue, config_path, kontakte)
+        args=(ui_msg_queue, discovery_cmd_queue, cfg_path, contact_list)
     )
 
-    # Netzwerkprozess starten (persönliche Nachrichten und Bilder per TCP)
-    p2 = multiprocessing.Process(
+    # Network process (TCP messaging)
+    net_proc = multiprocessing.Process(
         target=network_process,
-        args=(ui_queue, net_queue, config_path, kontakte)
+        args=(ui_msg_queue, network_cmd_queue, cfg_path, contact_list)
     )
 
-    # Prozesse starten (laufen unabhängig im Hintergrund)
-    p1.start()
-    p2.start()
+    # Start background processes
+    disc_proc.start()
+    net_proc.start()
 
-    # CLI/UI läuft im Hauptprozess (besonders wichtig unter Windows wegen Eingabeaufforderung)
+    # UI runs in main process (windows needs this)
     try:
-        ui_process(ui_queue, disc_queue, net_queue, config_path)
+        ui_process(ui_msg_queue, discovery_cmd_queue, network_cmd_queue, cfg_path)
     except KeyboardInterrupt:
-        print("Programm beendet")
+        print("Programm wird beendet...")
 
-    # Nach Beenden der UI-Prozess-Schleife: Kindprozesse beenden und aufräumen
-    p1.terminate()
-    p2.terminate()
-    p1.join()
-    p2.join()
+    # cleanup
+    disc_proc.terminate()
+    net_proc.terminate()
+    disc_proc.join()
+    net_proc.join()

@@ -1,110 +1,138 @@
-import socket       # Für Netzwerkkommunikation (UDP-Sockets)
-import toml         # Für das Einlesen der Konfigurationsdatei
-import time         # Für kleine Wartezeiten (z. B. nach WHO-Anfrage)
-import os           # (nicht verwendet, aber wird evtl. später gebraucht)
+# discovery_process.py
+import socket       
+import toml         
+import time         
+import os           
 
-# Hauptfunktion des Discovery-Prozesses
-def discovery_process(ui_queue, disc_queue, config_path, kontakte):
-    # Konfiguration aus .toml-Datei laden
-    config = toml.load(config_path)
-    handle = config["handle"]            # Eigener Nutzername
-    udp_port = config["whoisport"]       # Port für WHO-/JOIN-/LEAVE-Kommunikation
-    local_port = config["port"]          # Eigener TCP-Port für direkte Kommunikation
-
-    # Eigene IP-Adresse ermitteln und ausgeben
-    hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-    ui_queue.put(f"[DEBUG] Eigene IP-Adresse: {local_ip}")
-
-    # Lokalen Nutzer zu Kontakt- und Userliste hinzufügen
-    users = {handle: (local_ip, local_port)}
-    kontakte[handle] = (local_ip, local_port)
-
-    # Status-Flag, ob der Nutzer dem Chat beigetreten ist
-    beigetreten = False
-
-    # UDP-Socket für Broadcast öffnen
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(("", udp_port))         # Auf allen Schnittstellen lauschen
-    sock.setblocking(False)           # Nicht blockierend – sofort weiterarbeiten
-
-    # Endlosschleife zum Verarbeiten von eingehenden UDP-Nachrichten und Befehlen aus CLI
-    while True:
-        # Eingehende UDP-Nachrichten verarbeiten
+def find_available_port(start_port, max_attempts=100):
+    """Findet den nächsten verfügbaren Port ab start_port"""
+    for port in range(start_port, start_port + max_attempts):
         try:
-            data, addr = sock.recvfrom(512)
-            message = data.decode("utf-8").strip()
-            ui_queue.put(f"[DEBUG] UDP empfangen: {message} von {addr}")
+            # Test ob Port verfügbar ist
+            test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            test_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            test_sock.bind(("", port))
+            test_sock.close()
+            return port
+        except OSError:
+            continue
+    return None
 
-            # JOIN-Nachricht: neuer Nutzer möchte dem Chat beitreten
-            if message.startswith("JOIN"):
-                _, name, port = message.split()
-                if name == handle:
-                    continue  # Eigene JOIN-Nachricht ignorieren
-                users[name] = (addr[0], int(port))
-                kontakte[name] = (addr[0], int(port))
-                ui_queue.put(f"[DISCOVERY] {name} joined from {addr[0]}:{port}")
-                if name != handle and beigetreten:
-                    ui_queue.put(f"[INFO] Neuer Teilnehmer entdeckt: {name} ist dem Chat beigetreten.")
+def discovery_process(ui_queue, disc_queue, config_path, kontakte):
+    # Config laden
+    config = toml.load(config_path)
+    my_handle = config["handle"]            
+    broadcast_port = config["whoisport"]       
+    configured_tcp_port = config["port"]          
 
-            # WHO-Anfrage erhalten – andere Clients möchten wissen, wer online ist
-            elif message == "WHO":
-                ui_queue.put(f"[DISCOVERY] WHO-Anfrage empfangen von {addr[0]}:{addr[1]}")
-                known = ", ".join(f"{n} {ip} {p}" for n, (ip, p) in users.items())
-                response = f"KNOWNUSERS {known}"
-                sock.sendto(response.encode("utf-8"), addr)
+    # Automatisch verfügbaren Port finden
+    my_tcp_port = find_available_port(configured_tcp_port)
+    if my_tcp_port is None:
+        ui_queue.put(f"[ERROR] Kein verfügbarer Port ab {configured_tcp_port} gefunden!")
+        return
+    
+    if my_tcp_port != configured_tcp_port:
+        ui_queue.put(f"[INFO] Port {configured_tcp_port} belegt - verwende stattdessen Port {my_tcp_port}")
 
-            # LEAVE-Nachricht – jemand verlässt den Chat
-            elif message.startswith("LEAVE"):
-                _, name = message.split()
-                users.pop(name, None)
-                kontakte.pop(name, None)
-                ui_queue.put(f"[DISCOVERY] {name} left the chat")
+    # IP rausfinden
+    hostname = socket.gethostname()
+    my_ip = socket.gethostbyname(hostname)
+    ui_queue.put(f"[DEBUG] Meine IP: {my_ip}, Port: {my_tcp_port}")
+
+    # Mich selbst zur Liste hinzufügen
+    active_users = {my_handle: (my_ip, my_tcp_port)}
+    kontakte[my_handle] = (my_ip, my_tcp_port)
+
+    # Flag ob ich dem Chat beigetreten bin
+    joined_chat = False
+
+    # UDP Socket aufmachen für Broadcasts
+    udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    udp_sock.bind(("", broadcast_port))         
+    udp_sock.setblocking(False)           
+
+    # Main loop
+    while True:
+        # Schauen ob UDP Nachrichten da sind
+        try:
+            data, sender_addr = udp_sock.recvfrom(512)
+            msg = data.decode("utf-8").strip()
+            ui_queue.put(f"[DEBUG] UDP bekommen: {msg} von {sender_addr}")
+
+            # Jemand will joinen
+            if msg.startswith("JOIN"):
+                _, username, port_str = msg.split()
+                if username == my_handle:
+                    continue  # meine eigene JOIN msg ignorieren
+                active_users[username] = (sender_addr[0], int(port_str))
+                kontakte[username] = (sender_addr[0], int(port_str))
+                ui_queue.put(f"[DISCOVERY] {username} joined from {sender_addr[0]}:{port_str}")
+                if username != my_handle and joined_chat:
+                    ui_queue.put(f"[INFO] Neuer User online: {username} ist beigetreten.")
+
+            # WHO Anfrage - jemand will wissen wer online ist
+            elif msg == "WHO":
+                ui_queue.put(f"[DISCOVERY] WHO request von {sender_addr[0]}:{sender_addr[1]}")
+                user_list = ", ".join(f"{name} {ip} {port}" for name, (ip, port) in active_users.items())
+                reply = f"KNOWNUSERS {user_list}"
+                udp_sock.sendto(reply.encode("utf-8"), sender_addr)
+
+            # Jemand verlässt den Chat
+            elif msg.startswith("LEAVE"):
+                _, leaving_user = msg.split()
+                active_users.pop(leaving_user, None)
+                kontakte.pop(leaving_user, None)
+                ui_queue.put(f"[DISCOVERY] {leaving_user} hat den Chat verlassen")
 
         except BlockingIOError:
-            pass  # Kein Datenpaket erhalten → einfach weitermachen
+            pass  # nix da, weitermachen
 
-        # CLI-Kommandos aus disc_queue verarbeiten (JOIN, WHO, LEAVE, KONTAKTE)
+        # Commands von der UI abarbeiten
         try:
             while not disc_queue.empty():
-                cmd = disc_queue.get()
+                command = disc_queue.get()
 
-                # WHO-Anfrage ausgehend: wir wollen wissen, wer im Netzwerk aktiv ist
-                if cmd == "WHO":
-                    sock.sendto(b"WHO", ("255.255.255.255", udp_port))  # WHO an alle
-                    ui_queue.put("[DISCOVERY] WHO-Anfrage gesendet.")
-                    time.sleep(1.0)  # Warten, um Antworten zu sammeln
+                # WHO broadcast senden
+                if command == "WHO":
+                    udp_sock.sendto(b"WHO", ("255.255.255.255", broadcast_port))  
+                    ui_queue.put("[DISCOVERY] WHO broadcast gesendet.")
+                    time.sleep(1.0)  # bisschen warten für antworten
                     kontakte.clear()
-                    for name, (ip, port) in users.items():
+                    for name, (ip, port) in active_users.items():
                         kontakte[name] = (ip, port)
                     if kontakte:
-                        ui_queue.put("[DISCOVERY] Bekannte Nutzer:")
+                        ui_queue.put("[DISCOVERY] Online users:")
                         for name, (ip, port) in kontakte.items():
                             ui_queue.put(f"  - {name} @ {ip}:{port}")
                     else:
-                        ui_queue.put("[DISCOVERY] Keine Nutzer gefunden.")
+                        ui_queue.put("[DISCOVERY] Keiner online gefunden.")
 
-                # Kontaktliste anzeigen lassen
-                elif cmd == "KONTAKTE":
+                # Kontakte anzeigen
+                elif command == "KONTAKTE":
                     if kontakte:
-                        ui_queue.put("[KONTAKTE] Aktuell gespeicherte Kontakte:")
+                        ui_queue.put("[KONTAKTE] Gespeicherte Kontakte:")
                         for name, (ip, port) in kontakte.items():
                             ui_queue.put(f"  - {name} @ {ip}:{port}")
                     else:
-                        ui_queue.put("[KONTAKTE] Noch keine Kontakte gespeichert. Bitte WHO ausführen.")
+                        ui_queue.put("[KONTAKTE] Keine Kontakte da. Erst WHO machen.")
 
-                # JOIN-Befehl senden (wenn Nutzer dem Netzwerk beitritt)
-                elif cmd.startswith("JOIN"):
-                    sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
-                    ui_queue.put("[DISCOVERY] JOIN-Nachricht gesendet.")
-                    beigetreten = True
+                # JOIN broadcast - mit automatisch gefundenem Port
+                elif command.startswith("JOIN"):
+                    # Original command format: "JOIN username port"
+                    # Wir überschreiben den Port mit unserem automatisch gefundenen
+                    cmd_parts = command.split()
+                    username = cmd_parts[1]
+                    join_msg = f"JOIN {username} {my_tcp_port}"
+                    udp_sock.sendto(join_msg.encode("utf-8"), ("255.255.255.255", broadcast_port))
+                    ui_queue.put(f"[DISCOVERY] JOIN broadcast gesendet mit Port {my_tcp_port}.")
+                    joined_chat = True
 
-                # LEAVE-Befehl senden (wenn Nutzer den Chat verlässt)
-                elif cmd.startswith("LEAVE"):
-                    sock.sendto(cmd.encode("utf-8"), ("255.255.255.255", udp_port))
-                    ui_queue.put("[DISCOVERY] LEAVE-Nachricht gesendet.")
+                # LEAVE broadcast
+                elif command.startswith("LEAVE"):
+                    udp_sock.sendto(command.encode("utf-8"), ("255.255.255.255", broadcast_port))
+                    ui_queue.put("[DISCOVERY] LEAVE broadcast gesendet.")
 
         except Exception as e:
-            ui_queue.put(f"[DISCOVERY ERROR] {e}")
+            ui_queue.put(f"[DISCOVERY FEHLER] {e}")
