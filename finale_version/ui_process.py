@@ -1,9 +1,25 @@
 import time           
 import toml           
 import threading      
+from gui import start_gui
 
 def ui_process(ui_queue, disc_queue, net_queue, config_path):
-    # Menu zeigen
+    """
+    UI Process - startet die GUI statt CLI
+    """
+    try:
+        # GUI starten
+        start_gui(config_path, ui_queue, disc_queue, net_queue)
+    except Exception as e:
+        print(f"GUI Fehler: {e}")
+        # Fallback auf CLI wenn GUI nicht funktioniert
+        cli_fallback(ui_queue, disc_queue, net_queue, config_path)
+
+def cli_fallback(ui_queue, disc_queue, net_queue, config_path):
+    """
+    CLI Fallback falls GUI nicht funktioniert
+    """
+    print("GUI konnte nicht gestartet werden. Verwende CLI...")
     print("Chat CLI - Willkommen!\n")
     print("Was möchtest du machen?")
     print("1 - Chat beitreten (JOIN)")
