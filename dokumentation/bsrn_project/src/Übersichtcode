@@ -1,0 +1,94 @@
+#Main.py
+
+# @brief Hauptprogramm, steuert das gesamte Projekt mit mehreren Pozessen 
+
+#Aufgaben:
+
+# 1. Startet 3 Prozesse:
+
+# - Discovery => Sucht und verwaltet User im Netzwerk
+# - listen for messages => Lauscht nach Nachrichten im Netzwerk
+# - send broadcast => Sendet Broadcast Nachrichten an alle User im Netz
+
+# 2. Initialisiert Konfig Daten
+
+# 3. Sorgt für die Reihenfolge/Warteschlangen für alle Nutzer
+
+# 4. Startet das Nutzerinterface
+
+# 5. Beendet alle Prozesse, falls das Programm mit Strg C abgebrochen wird
+
+
+
+#@file gui.py
+#
+# @brief Grafische Benutzeroberfläche des Chatprogrammes
+#
+#Aufgaben: 
+# 1. Sendet Bilder und Testnachrichten
+# 2. Verarbeitet Chat Befehle wie JOIN
+# 3. Ziegt TOML Userdaten und Kontakte an
+# 4. Benutzer Betritt bei start automatisch den Chat
+#
+# Das GUI  dient als Interface for den Nutzer. 
+# Es kümmert sich um, dass Einsehen von User und Kontaktdaten
+# Des weiteren ermöglicht es, dass versendet es Nachichten und Bilder zwischen den Nutzern und
+# kommuniziert mit discovery für Warteschlangen
+#
+
+
+#@file  network_process.py
+
+# Verwaltet jegliche Netzwerkkommunikation des Programmes
+
+#Aufgaben:
+
+# 1. Verschickt und empfängt Nachrichten und Bilder via TCP Verbindungen
+# 2. Verwaltet den eigenen Port und Socket
+# 3. Leitet Ereignisse an das User Interface weiter
+# 4. Läd Konfig Userdaten aus TOML Dateien
+
+# @details Dieses Programm wartet auf eigehende TCP Verbindungen wie Bilder oder Nachichten.
+# Des weiteren läd es Userdaten aus den TOML Dateien und interagiert mit den User Interface
+# für Befehle und Warteschlangen für andere Prozesse. 
+
+
+#@file discovery_process
+#
+# @brief Der Discovery Prozess dient zur Netzwerkkommunikation im gesamten Programm.
+#
+#Aufgaben:
+# 1. Reagiert auf Nachichten und Befehle anderer User im Netzwerk
+# 2. Aktualisiert Userlisten
+# 3. Benutzt UDP Sockets für Broadcast Nachrichten
+# 4. Verarbeitet Befehle aus der CLI
+#
+#
+# Das Programm regelt die gesamte Netzwerkkommunikation wie zb. MSG, WHO und JOIN.
+# Des weiteren kommuniziert es mit dem User Interface um Userdaten aktuell zu halten
+
+
+##@file ui.py
+## @brief Command Line Interface (CLI) zur Steuerung der Netzwerkinteraktionen.
+
+#Aufgaben:
+#
+# 1. Started die Benutzeroberfläche - GUI falls dies nicht gelingt, die CLI
+# 2. Regelt Warteschlangen von Prozessen
+# 3. Interface bietet den User Optionen für die weitere Vorgehensweise
+
+## Dieses Modul stellt dem Benutzer eine einfache Textoberfläche zur Verfügung,
+## um Nachichten zu verschicken, zu empfangen und Kontakte zu erhalten.
+# Das Userinterface bietet Optionen:
+# 1. JOIN - Beitritt zum Netzwerk
+# 2. WHO  - Benutzer abfragen
+# 3. MSG  - Nachichten versenden
+# 4. LEAVE - Chat verlassem
+# 5. Kontakte anzeigen
+# 6. Config anzeigen
+# 7. Bilder verschicken
+# 8. Programm beenden
+
+# Das User interface ist verantwortlich für alle Kommunikationen zwischen Usern.
+# Kommuniziert mit discovery und network und managed Warteschlangen.
+
