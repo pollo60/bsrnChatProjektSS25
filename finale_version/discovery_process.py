@@ -14,7 +14,7 @@ def discovery_process(ui_queue, disc_queue, config_path, kontakte):
     # Eigene IP-Adresse ermitteln und ausgeben
     hostname = socket.gethostname()
     local_ip = socket.gethostbyname(hostname)
-    ui_queue.put(f"[DEBUG] Eigene IP-Adresse: {local_ip}")
+    ui_queue.put(f"Eigene IP-Adresse: {local_ip}")
 
     # Lokalen Nutzer zu Kontakt- und Userliste hinzufügen
     users = {handle: (local_ip, local_port)}
@@ -36,7 +36,7 @@ def discovery_process(ui_queue, disc_queue, config_path, kontakte):
         try:
             data, addr = sock.recvfrom(512)
             message = data.decode("utf-8").strip()
-            ui_queue.put(f"[DEBUG] UDP empfangen: {message} von {addr}")
+            #ui_queue.put(f"[DEBUG] UDP empfangen: {message} von {addr}")
 
             # JOIN-Nachricht: neuer Nutzer möchte dem Chat beitreten
             if message.startswith("JOIN"):
