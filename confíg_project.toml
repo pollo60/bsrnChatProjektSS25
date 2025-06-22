@@ -1,9 +1,0 @@
-handle = "default_user"
-port = 12345
-whoisport = 12346
-autoreply = true
-imagepath = "./images"
-
-
-
-        
