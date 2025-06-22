@@ -1,183 +1,99 @@
-Doxygen-Regeln (für alle)
-Pflicht für jede Funktion/Klasse:
+## @file
+#Main.py
 
-python
-def beispiel(a: int) -> bool:
-    """Kurzbeschreibung (wird automatisch @brief).
+#@brief Hauptprogramm, steuert das gesamte Projekt mit mehreren Pozessen 
+
+# Aufgaben:
+
+#1. Startet 3 Prozesse:
+
+# - Discovery => Sucht und verwaltet User im Netzwerk
+# - listen for messages => Lauscht nach Nachrichten im Netzwerk
+# - send broadcast => Sendet Broadcast Nachrichten an alle User im Netz
+
+# 2. Initialisiert Konfig Daten
+
+# 3. Sorgt für die Reihenfolge/Warteschlangen für alle Nutzer
+
+# 4. Startet das Nutzerinterface
+
+# 5. Beendet alle Prozesse, falls das Programm mit Strg C abgebrochen wird
+
+import multiprocessing  # Für mehrere Prozesse
+import sys              # Zugriff auf die Komandozeile
+import os               # Für Dateipfade und die Prüfung dieser
+
+from discovery_process import discovery_process # Importiert Discovery Funktionen
+from network_process import network_process     # Importiert Netzwerk Funktionen
+from ui_process import ui_process               # Importiert ui Funktionen
+
+if __name__ == "__main__":
+    # Windows braucht spawn für mehrere Prozesse
+    multiprocessing.set_start_method("spawn")  
+
+    # Script-Verzeichnis wird ermittelt
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    Args:
-        a (int): Beschreibung des Parameters.
-        
-    Returns:
-        bool: Beschreibung des Rückgabewerts.
-        
-    @note Wichtige Hinweise hier.
-    @todo #42 Offene Aufgabe verlinken.
-    """
-Args/Returns: Immer angeben.
+    # Ermittelt ob eine config Datei Datei angegeben wurde
+    if len(sys.argv) > 1:
+        cfg_filename = sys.argv[1]
+        # Wenn nur der Dateiname angegeben wird, im Script-Verzeichnis suchen
+        if not os.path.dirname(cfg_filename):
+            cfg_path = os.path.join(script_dir, cfg_filename)
+        else:
+            # falls der gesamte Pfad angegeben wurde
+            cfg_path = cfg_filename
+    else:
+        # Standard config.toml - Standard für das Config Verzeichnis
+        cfg_path = os.path.join(script_dir, "config.toml")
+    
+    # Prüfen ob Config-Datei existiert
+    if not os.path.exists(cfg_path):
+        print(f"FEHLER: Config-Datei '{cfg_path}' nicht gefunden!")
+        print("Verfügbare Config-Dateien im Script-Verzeichnis:")
+        for file in os.listdir(script_dir):
+            if file.endswith('.toml'):
+                print(f"  - {file}")
+        print(f"\nVerwendung: python {sys.argv[0]} [config-datei]")
+        print("Hinweis: Wenn nur der Dateiname angegeben wird, wird im Script-Verzeichnis gesucht.")
+        sys.exit(1)
 
-@note: Für Hinweise, @warning für kritische Infos.
+    print(f"Verwende Config: {cfg_path}")
 
-(TOML-Konfig dokumentieren:
+    # Shared data zwischen processes mit Hilfe eines Managers
+    mgr = multiprocessing.Manager()
+    contact_list = mgr.dict()  
 
-In Code (@param) und separater CONFIG.md.)
- 
+    # Inter-process communication queues - Warteschlange für mehrere Prozesse
+    ui_msg_queue = multiprocessing.Queue()     # discovery/network -> ui
+    discovery_cmd_queue = multiprocessing.Queue()   # ui -> discovery
+    network_cmd_queue = multiprocessing.Queue()    # ui -> network
 
-Workflow: Code/Dokumentation aktualisieren
-Für Entwickler (code):
-Lokal ändern:
+    # Der discovery process erkennt andere Nutzer im Netzwerk
+    disc_proc = multiprocessing.Process(
+        target=discovery_process,
+        args=(ui_msg_queue, discovery_cmd_queue, cfg_path, contact_list)
+    )
 
-git pull  # Aktuelle Version holen
-# Code schreiben + Doxygen-Kommentare hinzufügen
-git add src/mein_modul.py
-git commit -m "Feature X mit Docs"
-git push
+    # Network process (für Nachichten)
+    net_proc = multiprocessing.Process(
+        target=network_process,
+        args=(ui_msg_queue, network_cmd_queue, cfg_path, contact_list)
+    )
 
-(Doku-Verantwortung Fabian):
-Doku generieren (lokal):
+    # Start background processes (Started discovery und network im Hintergrund)
+    disc_proc.start()
+    net_proc.start()
 
-cd dokumentation/bsrn_project
-doxygen doxyfile  # Aktualisiert docs/html/
-git add docs/html/
-git commit -m "Doku für Feature X"
-git push
-→ Automatisch online unter:
-https://[team].github.io/bsrnChatProjektSS25/dokumentation/bsrn_project/docs/html/index.html
-Syntax für die Dokumentation: (JAVA/Python)
-
-Für eine gute Doxygen-Dokumentation solltest du die wichtigsten Kommentarbefehle verwenden, die Doxygen erkennt. Hier sind die 5 gängigsten Syntaxelemente, die du in deinem Code (z. B. in C++, Java oder Python) nutzen kannst: 
-
-JAVA 
-1.     /** … */ oder /// 
-
-→ Für Dokumentationskommentare. 
-
-Beispiel:
-
-/** 
-* Berechnet die Summe zweier Zahlen. 
-* @param a Die erste Zahl. 
-* @param b Die zweite Zahl. 
-* @return Die Summe von a und b. 
-*/ 
-int add(int a, int b); 
- 
-
-Oder einzeilig: 
-
-/// Diese Funktion gibt "Hallo Welt" aus. 
-void hello(); 
+    # Started den ui Prozess
+    try:
+        ui_process(ui_msg_queue, discovery_cmd_queue, network_cmd_queue, cfg_path)
+    except KeyboardInterrupt:
+        print("Programm wird beendet...")
 
 
-Python 
-
-1.     """ … """ (Triple-Quotes) oder # (für einzelne Zeilen) 
-
-def add(a, b): 
-    """ 
-    Berechnet die Summe zweier Zahlen. 
-    @param a: Die erste Zahl. 
-    @param b: Die zweite Zahl. 
-    @return: Die Summe von a und b. 
-    """ 
-    return a + b 
-  
-
-Oder einzeilig: 
-
-# Diese Funktion gibt "Hallo Welt" aus. 
-def hello(): 
-    print("Hallo Welt") 
-
-JAVA 
-2.     @param 
-
-→ Beschreibt einen Funktionsparameter. 
-
-Beispiel: 
-
-/// @param name Der Name der Person. 
-void greet(std::string name); 
-
- 
-
-Python 
-
-Beispiel: 
-
-def greet(name): 
-    """ 
-    @param name: Der Name der Person. 
-    """ 
-    print(f"Hallo, {name}!") 
-JAVA 
-
-3.     @return 
-
-→ Erklärt den Rückgabewert der Funktion. 
-
-Beispiel: 
-
-/// @return true, wenn die Datei geöffnet wurde. 
-bool openFile(std::string filename); 
-
- Python 
-
-Beispiel: 
-
-def is_even(n): 
-    """ 
-    Prüft, ob eine Zahl gerade ist. 
-    @param n: Die zu prüfende Zahl. 
-    @return: True, wenn gerade; sonst False. 
-    """ 
-    return n % 2 == 0 
- 
-
-JAVA 
-
-4.     @brief 
-
-→ Kurze Zusammenfassung (erscheint z. B. in Übersichten). 
-
-Beispiel: 
-
-/** 
-* @brief Führt einen Reset aller Werte durch. 
-*/ 
-void resetAll(); 
-
-Python 
-
-Beispiel: 
-
-def reset_all(): 
-    """ 
-    @brief Führt einen Reset aller Werte durch. 
-    """ 
-   JAVA 
-
-5.     @file 
-
-→ Einleitungstext für eine ganze Datei (am Anfang einer Datei platzieren). 
-
-Beispiel: 
-
-/** 
-* @file main.cpp 
-* @brief Hauptmodul des Projekts mit dem Einstiegspunkt. 
-*/ 
-
- Python 
-
-Beispiel: 
-
-""" 
-@file main.py 
-@brief Hauptmodul des Projekts mit dem Einstiegspunkt. 
-""" 
-  
-
-Natürlich! Hier ist die gleiche Erklärung und Beispiele, aber angepasst für Python-Code unter Verwendung der Doxygen-kompatiblen Syntax: 
-
-
+    # Beendet alle Prozesse
+    disc_proc.terminate()
+    net_proc.terminate()
+    disc_proc.join()
+    net_proc.join()
