@@ -1,0 +1,4 @@
+handle = "Ayman"
+port = 5000
+whoisport = 4000
+imagepath = "./images"
