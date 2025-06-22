@@ -1,7 +1,0 @@
-[login_daten]
-name = "ben"
-port = 5003
-ip = "192.168.0.12"
-ipnetz = "192.168.0.255"
-whoisport = 4000
-hallo = "Ben ist da – let’s go! 🚀"
