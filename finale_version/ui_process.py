@@ -13,7 +13,7 @@ def ui_process(ui_queue, disc_queue, net_queue, config_path):
     print("5 - Kontakte zeigen")
     print("6 - Config anzeigen")
     print("7 - Bild verschicken")
-    print("9 - Programm beenden")
+    print("8 - Programm beenden")
 
     # Background thread für live output
     def output_handler():
@@ -45,7 +45,7 @@ def ui_process(ui_queue, disc_queue, net_queue, config_path):
 
         # Message senden
         elif user_input == "3":
-            recipient = input("An wen? ").strip()
+            recipient = input("Empfänger: ").strip()
             msg_text = input("Nachricht: ").strip()
             net_queue.put(f"MSG {recipient} {msg_text}")  
 
@@ -82,7 +82,7 @@ def ui_process(ui_queue, disc_queue, net_queue, config_path):
                 print("[FEHLER] Bilddatei nicht vorhanden.")
 
         # Beenden
-        elif user_input == "9":
+        elif user_input == "8":
             print("Tschüss!")
             break
 
