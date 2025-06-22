@@ -1,70 +1,78 @@
-# ui.py
-import time
-from network_process import send_slcp_broadcast, slcp_MSG
-from config_utility import kontaktAnlegen, kontakteZeigen, check_for_contact_list, configAnzeigen
-import json
-def start_cli(auto=False, handle="", port=0, whoisport=4000, config_path="", contacts_path="", broadcast_ip="255.255.255.255",input_queue=None, message_queue=None):
-    if auto:
-        send_slcp_broadcast("JOIN", handle, str(port), port=whoisport, broadcast_ip=broadcast_ip)
-        time.sleep(1)
-        send_slcp_broadcast("WHO", handle, "", port=whoisport, broadcast_ip=broadcast_ip)
-        time.sleep(3)
-        return
+import multiprocessing  
+import sys              
+import toml             
+import os
 
-    print("""
---------------------------------------
-Waehle eine der folgenden Optionen 👀|
---------------------------------------
-1 - Netzwerk beitreten 🌐
-2 - Netzwerk verlassen ❌
-3 - WHO-Anfrage senden 🕵️
-4 - Kontakt anlegen ➕
-5 - Nachricht senden ✉️
-6 - Kontakte anzeigen 📗
-7 - Konfigurationsdatei anzeigen 🧩
-q - Programm beenden 👋
-""")
+from discovery_process import discovery_process
+from network_process import network_process
+from ui_process import ui_process
 
-    while True:
-        # Nachrichten anzeigen
-        while message_queue and not message_queue.empty():
-            print(message_queue.get())
+if __name__ == "__main__":
+    # Windows braucht spawn
+    multiprocessing.set_start_method("spawn")  
 
-        choice = input("Eingabe: ").strip()
-
-        if choice == "1":
-            input_queue.put(("JOIN", handle, str(port)))
-        elif choice == "2":
-            input_queue.put(("LEAVE", handle, ""))
-        elif choice == "3":
-            input_queue.put(("WHO", handle, ""))
-        elif choice == "4":
-            check_for_contact_list(contacts_path)
-            empfaenger = input("Name des Kontakts🆕: ").strip()
-            if empfaenger:
-                kontaktAnlegen(empfaenger, contacts_path)
-        elif choice == "5":
-            nachrichtSenden(contacts_path, handle, input_queue)
-        elif choice == "6":
-            kontakteZeigen(contacts_path)
-        elif choice == "7":
-            configAnzeigen(config_path)
-        elif choice.lower() == "q":
-            input_queue.put(("LEAVE", handle, ""))
-            break
+    # Script-Verzeichnis ermitteln
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Config file aus args oder default
+    if len(sys.argv) > 1:
+        cfg_filename = sys.argv[1]
+        # Wenn nur der Dateiname angegeben wird, im Script-Verzeichnis suchen
+        if not os.path.dirname(cfg_filename):
+            cfg_path = os.path.join(script_dir, cfg_filename)
         else:
-            print("Ungültige Eingabe ⚠️")
+            # Vollständiger Pfad wurde angegeben
+            cfg_path = cfg_filename
+    else:
+        # Standard config.toml 
+        cfg_path = os.path.join(script_dir, "config.toml")
+    
+    # Prüfen ob Config-Datei existiert
+    if not os.path.exists(cfg_path):
+        print(f"FEHLER: Config-Datei '{cfg_path}' nicht gefunden!")
+        print("Verfügbare Config-Dateien im Script-Verzeichnis:")
+        for file in os.listdir(script_dir):
+            if file.endswith('.toml'):
+                print(f"  - {file}")
+        print(f"\nVerwendung: python {sys.argv[0]} [config-datei]")
+        print("Hinweis: Wenn nur der Dateiname angegeben wird, wird im Script-Verzeichnis gesucht.")
+        sys.exit(1)
 
-        time.sleep(0.5)
+    print(f"Verwende Config: {cfg_path}")
 
-def nachrichtSenden(contacts_path, handle, input_queue):
-    empfaenger = input("Empfänger: ").strip()
-    if not empfaenger:
-        print("Empfänger darf nicht leer sein ⚠️")
-        return
-    nachricht = input("Nachricht: ").strip()
-    if not nachricht:
-        print("Nachricht darf nicht leer sein ⚠️")
-        return
-    #Bis hier her erstmal die Nachricht eingeben
-    input_queue.put(("CHAT", handle, json.dumps({"empfaenger": empfaenger, "nachricht": nachricht, "contacts_path": contacts_path})))
+    # Shared data zwischen processes
+    mgr = multiprocessing.Manager()
+    contact_list = mgr.dict()  
+
+    # Inter-process communication queues 
+    ui_msg_queue = multiprocessing.Queue()     # discovery/network -> ui
+    discovery_cmd_queue = multiprocessing.Queue()   # ui -> discovery
+    network_cmd_queue = multiprocessing.Queue()    # ui -> network
+
+    # Discovery process (UDP)
+    disc_proc = multiprocessing.Process(
+        target=discovery_process,
+        args=(ui_msg_queue, discovery_cmd_queue, cfg_path, contact_list)
+    )
+
+    # Network process (TCP messaging)
+    net_proc = multiprocessing.Process(
+        target=network_process,
+        args=(ui_msg_queue, network_cmd_queue, cfg_path, contact_list)
+    )
+
+    # Start background processes
+    disc_proc.start()
+    net_proc.start()
+
+    # UI runs in main process (windows needs this)
+    try:
+        ui_process(ui_msg_queue, discovery_cmd_queue, network_cmd_queue, cfg_path)
+    except KeyboardInterrupt:
+        print("Programm wird beendet...")
+
+    # cleanup
+    disc_proc.terminate()
+    net_proc.terminate()
+    disc_proc.join()
+    net_proc.join()
