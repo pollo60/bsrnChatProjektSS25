@@ -1,0 +1,181 @@
+\doxysection{gui.\+Chat\+GUI Class Reference}
+\hypertarget{classgui_1_1_chat_g_u_i}{}\label{classgui_1_1_chat_g_u_i}\index{gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a394332f3405092d15e09c11bb726e73e}\label{classgui_1_1_chat_g_u_i_a394332f3405092d15e09c11bb726e73e} 
+{\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, root, config\+\_\+path, ui\+\_\+queue, discovery\+\_\+queue, network\+\_\+queue)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_adc2a879611e8c983b68aa904efa7fdf8}{log}} (self, text)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_a661b5e936057dee7be086c54d0913bbc}{update\+\_\+output}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_a386635e9af51ba3348b779d6a88b5462}{join\+\_\+network}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_a0f7c8941c072d6473e6b3b1e6657eb6f}{leave\+\_\+network}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_a36f52b017b52272f9e3069e700a7c065}{send\+\_\+who}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_ad954094216f0d610bcccc7c79225d05c}{show\+\_\+contacts}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_afcca46a6ea7499ab19a8a16af6c3694a}{send\+\_\+message}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_a243d42d6cbde0927e8a1582f5a0da241}{send\+\_\+image}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_a2c5c1d9a67c2ff1ff5c77545f731899f}{show\+\_\+config}} (self)
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_ad8ee04252fc758f68bcbc2241455e577}{exit\+\_\+program}} (self)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a47912763523df6b1d5c0d7c917e58c67}\label{classgui_1_1_chat_g_u_i_a47912763523df6b1d5c0d7c917e58c67} 
+{\bfseries root} = root
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a3964f8c067f8242c2523afa9e1d17f4d}\label{classgui_1_1_chat_g_u_i_a3964f8c067f8242c2523afa9e1d17f4d} 
+{\bfseries config\+\_\+path} = config\+\_\+path
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a0931a1b45373f7879d267e3733fc8daf}\label{classgui_1_1_chat_g_u_i_a0931a1b45373f7879d267e3733fc8daf} 
+{\bfseries ui\+\_\+queue} = ui\+\_\+queue
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a5e06db1121852c9592b2344d4253094c}\label{classgui_1_1_chat_g_u_i_a5e06db1121852c9592b2344d4253094c} 
+{\bfseries discovery\+\_\+queue} = discovery\+\_\+queue
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_abb9174e6b54ba3f6019563fd417541cc}\label{classgui_1_1_chat_g_u_i_abb9174e6b54ba3f6019563fd417541cc} 
+{\bfseries network\+\_\+queue} = network\+\_\+queue
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a78d009f4b00d932ff62a59a21a2cbde7}\label{classgui_1_1_chat_g_u_i_a78d009f4b00d932ff62a59a21a2cbde7} 
+{\bfseries config} = toml.\+load(config\+\_\+path)
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a7e06e326b494650d1e6dd3df064f2c14}\label{classgui_1_1_chat_g_u_i_a7e06e326b494650d1e6dd3df064f2c14} 
+{\bfseries handle} = self.\+config\mbox{[}"{}handle"{}\mbox{]}
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a7ca7cd24c04ab91a39a0bd46f26693f4}\label{classgui_1_1_chat_g_u_i_a7ca7cd24c04ab91a39a0bd46f26693f4} 
+{\bfseries port} = self.\+config\mbox{[}"{}port"{}\mbox{]}
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_aa544dd7b0bb810de35df5d9d6d4cdcae}\label{classgui_1_1_chat_g_u_i_aa544dd7b0bb810de35df5d9d6d4cdcae} 
+{\bfseries whoisport} = self.\+config\mbox{[}"{}whoisport"{}\mbox{]}
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a557f76964e8f58a6589201af53f1fac6}\label{classgui_1_1_chat_g_u_i_a557f76964e8f58a6589201af53f1fac6} 
+{\bfseries imagepath} = self.\+config\mbox{[}"{}imagepath"{}\mbox{]}
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_ae5f8549ff172e742f0d5f1a5792b928b}\label{classgui_1_1_chat_g_u_i_ae5f8549ff172e742f0d5f1a5792b928b} 
+{\bfseries output\+\_\+box} = scrolledtext.\+Scrolled\+Text(root, height=20, wrap=tk.\+WORD)
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a32936e5347fcbf0219ff26f5f8f0dfdd}\label{classgui_1_1_chat_g_u_i_a32936e5347fcbf0219ff26f5f8f0dfdd} 
+{\bfseries entry\+\_\+frame} = tk.\+Frame(root)
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a9a6b2480a62eccee07b1da699e47e806}\label{classgui_1_1_chat_g_u_i_a9a6b2480a62eccee07b1da699e47e806} 
+{\bfseries recipient\+\_\+var} = tk.\+String\+Var()
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_ac0847376c7e0df64e8e9c3626ec6cc4b}\label{classgui_1_1_chat_g_u_i_ac0847376c7e0df64e8e9c3626ec6cc4b} 
+{\bfseries message\+\_\+var} = tk.\+String\+Var()
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_ad37126a47751c4c8656255946533c390}\label{classgui_1_1_chat_g_u_i_ad37126a47751c4c8656255946533c390} 
+{\bfseries recipient\+\_\+entry} = tk.\+Entry(self.\+entry\+\_\+frame, textvariable=self.\+recipient\+\_\+var, width=15)
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_aa66b2a35012248377a39f7dc0c86a7cd}\label{classgui_1_1_chat_g_u_i_aa66b2a35012248377a39f7dc0c86a7cd} 
+{\bfseries message\+\_\+entry} = tk.\+Entry(self.\+entry\+\_\+frame, textvariable=self.\+message\+\_\+var)
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a2d3b220625100a196727f4739c47a96d}\label{classgui_1_1_chat_g_u_i_a2d3b220625100a196727f4739c47a96d} 
+{\bfseries send\+\_\+button} = tk.\+Button(self.\+entry\+\_\+frame, text="{}Senden"{}, command=self.\+send\+\_\+message)
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a148cea5d28e9c4fb9282203e28977ff7}\label{classgui_1_1_chat_g_u_i_a148cea5d28e9c4fb9282203e28977ff7} 
+{\bfseries button\+\_\+frame} = tk.\+Frame(root)
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_ac9e66f59cb2b30c74f1763ce64175d71}\label{classgui_1_1_chat_g_u_i_ac9e66f59cb2b30c74f1763ce64175d71} 
+bool {\bfseries running} = True
+\item 
+\Hypertarget{classgui_1_1_chat_g_u_i_a64564e773cef9a191b1ebaf0b1d4b6c4}\label{classgui_1_1_chat_g_u_i_a64564e773cef9a191b1ebaf0b1d4b6c4} 
+{\bfseries join\+\_\+network} = True).start()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classgui_1_1_chat_g_u_i_a878ecd20d7f7bae814f3d69ef2b052b7}{\+\_\+show\+\_\+popup}} (self, title, content)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classgui_1_1_chat_g_u_i_a878ecd20d7f7bae814f3d69ef2b052b7}\index{gui.ChatGUI@{gui.ChatGUI}!\_show\_popup@{\_show\_popup}}
+\index{\_show\_popup@{\_show\_popup}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{\_show\_popup()}{\_show\_popup()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_a878ecd20d7f7bae814f3d69ef2b052b7} 
+gui.\+Chat\+GUI.\+\_\+show\+\_\+popup (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{title}{, }\item[{}]{content}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+\begin{DoxyVerb}Popup-Fenster anzeigen\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_ad8ee04252fc758f68bcbc2241455e577}\index{gui.ChatGUI@{gui.ChatGUI}!exit\_program@{exit\_program}}
+\index{exit\_program@{exit\_program}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{exit\_program()}{exit\_program()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_ad8ee04252fc758f68bcbc2241455e577} 
+gui.\+Chat\+GUI.\+exit\+\_\+program (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Programm beenden\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_a386635e9af51ba3348b779d6a88b5462}\index{gui.ChatGUI@{gui.ChatGUI}!join\_network@{join\_network}}
+\index{join\_network@{join\_network}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{join\_network()}{join\_network()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_a386635e9af51ba3348b779d6a88b5462} 
+gui.\+Chat\+GUI.\+join\+\_\+network (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Dem Netzwerk beitreten\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_a0f7c8941c072d6473e6b3b1e6657eb6f}\index{gui.ChatGUI@{gui.ChatGUI}!leave\_network@{leave\_network}}
+\index{leave\_network@{leave\_network}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{leave\_network()}{leave\_network()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_a0f7c8941c072d6473e6b3b1e6657eb6f} 
+gui.\+Chat\+GUI.\+leave\+\_\+network (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Netzwerk verlassen\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_adc2a879611e8c983b68aa904efa7fdf8}\index{gui.ChatGUI@{gui.ChatGUI}!log@{log}}
+\index{log@{log}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{log()}{log()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_adc2a879611e8c983b68aa904efa7fdf8} 
+gui.\+Chat\+GUI.\+log (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{text}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Nachricht ins Ausgabefenster schreiben\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_a243d42d6cbde0927e8a1582f5a0da241}\index{gui.ChatGUI@{gui.ChatGUI}!send\_image@{send\_image}}
+\index{send\_image@{send\_image}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{send\_image()}{send\_image()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_a243d42d6cbde0927e8a1582f5a0da241} 
+gui.\+Chat\+GUI.\+send\+\_\+image (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Bild senden\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_afcca46a6ea7499ab19a8a16af6c3694a}\index{gui.ChatGUI@{gui.ChatGUI}!send\_message@{send\_message}}
+\index{send\_message@{send\_message}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{send\_message()}{send\_message()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_afcca46a6ea7499ab19a8a16af6c3694a} 
+gui.\+Chat\+GUI.\+send\+\_\+message (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Nachricht senden\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_a36f52b017b52272f9e3069e700a7c065}\index{gui.ChatGUI@{gui.ChatGUI}!send\_who@{send\_who}}
+\index{send\_who@{send\_who}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{send\_who()}{send\_who()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_a36f52b017b52272f9e3069e700a7c065} 
+gui.\+Chat\+GUI.\+send\+\_\+who (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}WHO-Anfrage senden\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_a2c5c1d9a67c2ff1ff5c77545f731899f}\index{gui.ChatGUI@{gui.ChatGUI}!show\_config@{show\_config}}
+\index{show\_config@{show\_config}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{show\_config()}{show\_config()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_a2c5c1d9a67c2ff1ff5c77545f731899f} 
+gui.\+Chat\+GUI.\+show\+\_\+config (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Konfiguration anzeigen\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_ad954094216f0d610bcccc7c79225d05c}\index{gui.ChatGUI@{gui.ChatGUI}!show\_contacts@{show\_contacts}}
+\index{show\_contacts@{show\_contacts}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{show\_contacts()}{show\_contacts()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_ad954094216f0d610bcccc7c79225d05c} 
+gui.\+Chat\+GUI.\+show\+\_\+contacts (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Kontakte anzeigen\end{DoxyVerb}
+ \Hypertarget{classgui_1_1_chat_g_u_i_a661b5e936057dee7be086c54d0913bbc}\index{gui.ChatGUI@{gui.ChatGUI}!update\_output@{update\_output}}
+\index{update\_output@{update\_output}!gui.ChatGUI@{gui.ChatGUI}}
+\doxysubsubsection{\texorpdfstring{update\_output()}{update\_output()}}
+{\footnotesize\ttfamily \label{classgui_1_1_chat_g_u_i_a661b5e936057dee7be086c54d0913bbc} 
+gui.\+Chat\+GUI.\+update\+\_\+output (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Thread für Nachrichtenanzeige\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Fabian/bsrn\+Chat\+Projekt\+SS25/finale\+\_\+version/gui.\+py\end{DoxyCompactItemize}
